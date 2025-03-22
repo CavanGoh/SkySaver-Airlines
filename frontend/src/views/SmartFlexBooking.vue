@@ -1,5 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+
+// Sample airport data - replace with your actual airport data or API call
+const airports = [
+  { code: 'JFK', name: 'John F. Kennedy International Airport', city: 'New York' },
+  { code: 'LAX', name: 'Los Angeles International Airport', city: 'Los Angeles' },
+  { code: 'LHR', name: 'Heathrow Airport', city: 'London' },
+  { code: 'CDG', name: 'Charles de Gaulle Airport', city: 'Paris' },
+  { code: 'DXB', name: 'Dubai International Airport', city: 'Dubai' },
+  { code: 'HND', name: 'Haneda Airport', city: 'Tokyo' },
+  { code: 'SIN', name: 'Singapore Changi Airport', city: 'Singapore' },
+  { code: 'SYD', name: 'Sydney Airport', city: 'Sydney' },
+  { code: 'AMS', name: 'Amsterdam Airport Schiphol', city: 'Amsterdam' },
+  { code: 'FRA', name: 'Frankfurt Airport', city: 'Frankfurt' },
+];
 
 const flexBooking = ref({
   destination: '',
@@ -8,8 +22,26 @@ const flexBooking = ref({
   passengers: 1
 });
 
+const showDropdown = ref(false);
+const filteredAirports = computed(() => {
+  if (!flexBooking.value.destination) return [];
+  
+  const searchTerm = flexBooking.value.destination.toLowerCase();
+  return airports.filter(airport => 
+    airport.code.toLowerCase().includes(searchTerm) || 
+    airport.name.toLowerCase().includes(searchTerm) || 
+    airport.city.toLowerCase().includes(searchTerm)
+  ).slice(0, 5); // Limit to 5 results
+});
+
+const selectAirport = (airport) => {
+  flexBooking.value.destination = `${airport.city} (${airport.code})`;
+  showDropdown.value = false;
+};
+
 const submitFlexBooking = async () => {
   // TODO: Implement flex booking submission
+  console.log('Submitting flex booking:', flexBooking.value);
 };
 </script>
 
@@ -23,16 +55,30 @@ const submitFlexBooking = async () => {
 
       <div class="bg-white rounded-lg shadow-sm p-6">
         <form @submit.prevent="submitFlexBooking" class="space-y-6">
-          <div>
+          <div class="relative">
             <label for="destination" class="block text-sm font-medium text-gray-700">Destination</label>
             <input
               type="text"
               id="destination"
               v-model="flexBooking.destination"
+              @focus="showDropdown = true"
+              @blur="setTimeout(() => showDropdown = false, 200)"
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               placeholder="Where do you want to go?"
               required
             />
+            <!-- Airport dropdown -->
+            <div v-if="showDropdown && filteredAirports.length > 0" 
+                 class="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-auto">
+              <ul class="py-1">
+                <li v-for="airport in filteredAirports" :key="airport.code"
+                    @mousedown="selectAirport(airport)"
+                    class="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                  <div class="font-medium">{{ airport.city }} ({{ airport.code }})</div>
+                  <div class="text-sm text-gray-500">{{ airport.name }}</div>
+                </li>
+              </ul>
+            </div>
           </div>
           
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">

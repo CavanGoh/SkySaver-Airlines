@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import SmartFlexBooking from './SmartFlexBooking.vue';
 
 const bookingType = ref('standard');
 
@@ -111,78 +112,7 @@ const searchFlights = async () => {
 
     <!-- Smart Flex Booking Form -->
     <div v-else class="bg-white rounded-lg shadow-sm p-6 mb-8">
-      <p class="text-gray-600 mb-6">
-        Get up to 50% off by being flexible with your travel dates. We'll notify you when discounted seats become available!
-      </p>
-      <form @submit.prevent="searchFlights" class="space-y-6">
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <div>
-            <label for="flex-departure" class="block text-sm font-medium text-gray-700">From</label>
-            <input
-              type="text"
-              id="flex-departure"
-              v-model="flightSearch.departure"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              placeholder="City or airport"
-              required
-            />
-          </div>
-          <div>
-            <label for="flex-destination" class="block text-sm font-medium text-gray-700">To</label>
-            <input
-              type="text"
-              id="flex-destination"
-              v-model="flightSearch.destination"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              placeholder="City or airport"
-              required
-            />
-          </div>
-        </div>
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <div>
-            <label for="flex-start-date" class="block text-sm font-medium text-gray-700">Earliest Travel Date</label>
-            <input
-              type="date"
-              id="flex-start-date"
-              v-model="flightSearch.date"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div>
-            <label for="flex-end-date" class="block text-sm font-medium text-gray-700">Latest Travel Date</label>
-            <input
-              type="date"
-              id="flex-end-date"
-              v-model="flightSearch.endDate"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required
-            />
-          </div>
-        </div>
-        <div>
-          <label for="flex-passengers" class="block text-sm font-medium text-gray-700">Passengers</label>
-          <input
-            type="number"
-            id="flex-passengers"
-            v-model="flightSearch.passengers"
-            min="1"
-            max="9"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            required
-          />
-        </div>
-        <div>
-          <button
-            type="submit"
-            class="w-full sm:w-auto rounded-md bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            :disabled="isLoading"
-          >
-            {{ isLoading ? 'Processing...' : 'Book Smart Flex Seat' }}
-          </button>
-        </div>
-      </form>
+     <SmartFlexBooking/>
     </div>
 
     <!-- Search Results -->
