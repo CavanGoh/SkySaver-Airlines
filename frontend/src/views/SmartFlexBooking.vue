@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 
 // Sample airport data - replace with your actual airport data or API call
 const airports = [
@@ -14,7 +15,6 @@ const airports = [
   { code: 'AMS', name: 'Amsterdam Airport Schiphol', city: 'Amsterdam' },
   { code: 'FRA', name: 'Frankfurt Airport', city: 'Frankfurt' },
 ];
-
 const flexBooking = ref({
   destination: '',
   startDate: '',
@@ -22,16 +22,17 @@ const flexBooking = ref({
   passengers: 1
 });
 
+
 const showDropdown = ref(false);
 const filteredAirports = computed(() => {
   if (!flexBooking.value.destination) return [];
   
   const searchTerm = flexBooking.value.destination.toLowerCase();
   return airports.filter(airport => 
-    airport.code.toLowerCase().includes(searchTerm) || 
-    airport.name.toLowerCase().includes(searchTerm) || 
-    airport.city.toLowerCase().includes(searchTerm)
-  ).slice(0, 5); // Limit to 5 results
+  airport.code.toLowerCase().includes(searchTerm) || 
+  airport.name.toLowerCase().includes(searchTerm) || 
+  airport.city.toLowerCase().includes(searchTerm)
+).slice(0, 5); 
 });
 
 const selectAirport = (airport) => {
@@ -39,9 +40,8 @@ const selectAirport = (airport) => {
   showDropdown.value = false;
 };
 
+const router = useRouter();
 const submitFlexBooking = async () => {
-  // TODO: Implement flex booking submission
-  console.log('Submitting flex booking:', flexBooking.value);
 };
 </script>
 

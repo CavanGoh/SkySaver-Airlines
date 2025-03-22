@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import SmartFlexBooking from './SmartFlexBooking.vue';
-
 const bookingType = ref('standard');
+const router = useRouter();
 
 const flightSearch = ref({
   departure: '',
@@ -12,13 +13,72 @@ const flightSearch = ref({
   passengers: 1
 });
 
-const searchResults = ref([]);
+const searchResults = ref<Array<{
+  id: string;
+  airline: string;
+  departure: string;
+  destination: string;
+  departureTime: string;
+  arrivalTime: string;
+  duration: string;
+  price: number;
+  aircraft: string;
+  seatsAvailable: number;
+}>>([]);
 const isLoading = ref(false);
 
 const searchFlights = async () => {
   isLoading.value = true;
-  // TODO: Implement API call
+  
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  // Hardcoded flight results
+  searchResults.value = [
+    {
+      id: 'SK1234',
+      airline: 'SkySaver Airways',
+      departure: flightSearch.value.departure || 'London',
+      destination: flightSearch.value.destination || 'New York',
+      departureTime: '08:30',
+      arrivalTime: '11:45',
+      duration: '3h 15m',
+      price: 299.99,
+      aircraft: 'Boeing 737-800',
+      seatsAvailable: 24
+    },
+    {
+      id: 'SK2345',
+      airline: 'SkySaver Airways',
+      departure: flightSearch.value.departure || 'London',
+      destination: flightSearch.value.destination || 'New York',
+      departureTime: '12:15',
+      arrivalTime: '15:30',
+      duration: '3h 15m',
+      price: 349.99,
+      aircraft: 'Airbus A320',
+      seatsAvailable: 16
+    },
+    {
+      id: 'SK3456',
+      airline: 'SkySaver Airways',
+      departure: flightSearch.value.departure || 'London',
+      destination: flightSearch.value.destination || 'New York',
+      departureTime: '16:45',
+      arrivalTime: '20:00',
+      duration: '3h 15m',
+      price: 279.99,
+      aircraft: 'Boeing 737-900',
+      seatsAvailable: 8
+    }
+  ];
+  
   isLoading.value = false;
+};
+
+const selectFlight = (flight) => {
+  
+  router.push("/my-bookings")
 };
 </script>
 
@@ -116,8 +176,69 @@ const searchFlights = async () => {
     </div>
 
     <!-- Search Results -->
-    <div v-if="searchResults.length > 0" class="space-y-4">
-      <!-- Flight results will be displayed here -->
+    <div v-if="searchResults.length > 0" class="mt-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">Available Flights</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div 
+          v-for="flight in searchResults" 
+          :key="flight.id" 
+          class="bg-white shadow rounded-lg overflow-hidden border border-gray-200 flex flex-col"
+        >
+          <!-- Flight header -->
+          <div class="bg-blue-50 px-4 py-3 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+              <h3 class="font-bold text-lg text-blue-700">{{ flight.airline }}</h3>
+              <span class="text-sm bg-blue-100 text-blue-800 py-1 px-2 rounded">{{ flight.id }}</span>
+            </div>
+          </div>
+          
+          <!-- Flight details -->
+          <div class="p-4 flex-grow">
+            <div class="flex justify-between mb-4">
+              <div class="text-center">
+                <p class="text-xl font-bold">{{ flight.departureTime }}</p>
+                <p class="text-sm text-gray-600">{{ flight.departure }}</p>
+              </div>
+              <div class="flex items-center px-2">
+                <div class="h-0.5 w-16 bg-gray-300 relative">
+                  <span class="text-xs text-gray-500 absolute -top-5 left-1/2 transform -translate-x-1/2">
+                    {{ flight.duration }}
+                  </span>
+                </div>
+              </div>
+              <div class="text-center">
+                <p class="text-xl font-bold">{{ flight.arrivalTime }}</p>
+                <p class="text-sm text-gray-600">{{ flight.destination }}</p>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div class="bg-gray-50 p-2 rounded">
+                <span class="text-gray-600">Aircraft:</span>
+                <span class="font-medium ml-1">{{ flight.aircraft }}</span>
+              </div>
+              <div class="bg-gray-50 p-2 rounded">
+                <span class="text-gray-600">Seats:</span>
+                <span class="font-medium ml-1">{{ flight.seatsAvailable }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Price and select button -->
+          <div class="bg-gray-50 p-4 border-t border-gray-200">
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-gray-600 text-sm">Price per passenger</span>
+              <span class="text-xl font-bold text-blue-700">${{ flight.price }}</span>
+            </div>
+            <button
+              @click="selectFlight(flight)"
+              class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition-colors"
+            >
+              Select
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

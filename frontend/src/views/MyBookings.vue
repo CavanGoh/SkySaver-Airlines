@@ -1,29 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 
 const activeTab = ref('upcoming');
-// Hardcoded example booking
-const bookings = ref([
-  {
-    id: '1234',
-    flightNumber: 'SK123',
-    departure: {
-      airport: 'LHR',
-      city: 'London',
-      date: '2025-04-15',
-      time: '14:30'
-    },
-    arrival: {
-      airport: 'JFK',
-      city: 'New York',
-      date: '2025-04-15',
-      time: '17:45'
-    },
-    passengers: 1,
-    price: 349.99,
-    status: 'confirmed'
-  }
-]);
+const bookings = ref([]);
 const flexBookings = ref([]);
 
 // Function to handle booking cancellation
@@ -35,6 +15,20 @@ const cancelBooking = (bookingId: string) => {
     bookings.value.splice(index, 1);
   }
 };
+
+const fetchUserBookings = async () =>{
+  try{
+    let response = await axios.get("http://localhost:5000/get/userflight/101");
+    let userFlights = response.data.data.booking;
+    console.log(userFlights);
+  }catch (err) {
+    console.error('Error fetching bookings:', err);
+  }
+}
+
+onMounted(() => {
+  fetchUserBookings();
+})
 </script>
 
 <template>
@@ -77,32 +71,6 @@ const cancelBooking = (bookingId: string) => {
             >
               ✕
             </button>
-            
-            <div class="flex flex-col md:flex-row md:justify-between">
-              <div>
-                <p class="text-sm text-gray-500">Flight Number</p>
-                <p class="font-semibold">{{ booking.flightNumber }}</p>
-              </div>
-              
-              <div class="flex flex-col md:flex-row gap-8 mt-4 md:mt-0">
-                <div>
-                  <p class="text-sm text-gray-500">From</p>
-                  <p class="font-semibold">{{ booking.departure.city }} ({{ booking.departure.airport }})</p>
-                  <p>{{ booking.departure.date }}, {{ booking.departure.time }}</p>
-                </div>
-                
-                <div>
-                  <p class="text-sm text-gray-500">To</p>
-                  <p class="font-semibold">{{ booking.arrival.city }} ({{ booking.arrival.airport }})</p>
-                  <p>{{ booking.arrival.date }}, {{ booking.arrival.time }}</p>
-                </div>
-              </div>
-              
-              <div>
-                <p class="text-sm text-gray-500">Price</p>
-                <p class="font-semibold">${{ booking.price.toFixed(2) }}</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>
