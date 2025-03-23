@@ -1,0 +1,13 @@
+services:
+  flight:
+    build:
+      context: ./atomicMicroservices/flightService
+      dockerfile: Dockerfile
+    image: edrictan/flight:1.0
+    container_name: flight
+    ports:
+      - "5000:5000"
+    env_file: #env_file directive automatically loads the environment variables from the .env
+      - .env # This loads the variables from .env file
+  # networks:
+  #   - flight-network
