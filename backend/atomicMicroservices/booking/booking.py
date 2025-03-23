@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root@localhost:3306/booking'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -11,7 +13,7 @@ db = SQLAlchemy(app)
 
 class Booking(db.Model):
     __tablename__ = "booking"
-    booking_id = db.Column(db.Integer, primary_key=True)
+    booking_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, nullable=False)
     flight_id = db.Column(db.Integer, nullable=False)
     status = db.Column(db.String(50), nullable=False)
@@ -24,17 +26,16 @@ class Booking(db.Model):
             'status': self.status,
         }
 
-@app.route("/booking")
-def get_all_booking():
-    bookings = db.session.scalars(db.select(Booking)).all()
-    return jsonify(
-        {
-                "code": 200,
-                "data": {
-                    "booking": [booking.json() for booking in bookings]
-                }
-            }
-    )
+@app.route("/booking/<string:user_id>")
+def get_all_booking(user_id):
+    user_id = int(user_id)
+    bookings = db.session.query(Booking).filter_by(user_id=user_id).all()
+    return jsonify({
+        "code": 200,
+        "data": {
+            "booking": [booking.json() for booking in bookings]
+        }
+    })
     
 @app.route("/booking/cancel/<string:booking_id>", methods=['PUT'])
 def cancel_booking(booking_id):
@@ -67,7 +68,7 @@ def cancel_booking(booking_id):
             }
         })
         
-@app.route("/booking/new/", methods=['POST'])
+@app.route("/booking/new", methods=['POST'])
 def new_booking():
     try:
         data = request.get_json()

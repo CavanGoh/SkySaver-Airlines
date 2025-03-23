@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import SmartFlexBooking from './SmartFlexBooking.vue';
 const bookingType = ref('standard');
 const router = useRouter();
+import axios from 'axios';
 
 const flightSearch = ref({
   departure: '',
@@ -36,7 +37,7 @@ const searchFlights = async () => {
   // Hardcoded flight results
   searchResults.value = [
     {
-      id: 'SK1234',
+      id: '1234',
       airline: 'SkySaver Airways',
       departure: flightSearch.value.departure || 'London',
       destination: flightSearch.value.destination || 'New York',
@@ -48,7 +49,7 @@ const searchFlights = async () => {
       seatsAvailable: 24
     },
     {
-      id: 'SK2345',
+      id: '2345',
       airline: 'SkySaver Airways',
       departure: flightSearch.value.departure || 'London',
       destination: flightSearch.value.destination || 'New York',
@@ -60,7 +61,7 @@ const searchFlights = async () => {
       seatsAvailable: 16
     },
     {
-      id: 'SK3456',
+      id: '3456',
       airline: 'SkySaver Airways',
       departure: flightSearch.value.departure || 'London',
       destination: flightSearch.value.destination || 'New York',
@@ -76,9 +77,19 @@ const searchFlights = async () => {
   isLoading.value = false;
 };
 
-const selectFlight = (flight) => {
-  
-  router.push("/my-bookings")
+const selectFlight = async (flight) => {
+  try {
+    let flight_id = flight.id
+    const response = await axios.post('http://localhost:5000/booking/new', {
+      user_id: 1,
+      flight_id:flight_id,
+    });
+    
+    console.log('Booking created:', response.data);
+    router.push("/my-bookings")
+  } catch (error) {
+    console.error('Error creating booking:', error);
+  }
 };
 </script>
 

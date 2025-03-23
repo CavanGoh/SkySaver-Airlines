@@ -7,20 +7,31 @@ const bookings = ref([]);
 const flexBookings = ref([]);
 
 // Function to handle booking cancellation
-const cancelBooking = (bookingId: string) => {
-  // In a real app, this would make an API call
-  // For now, just remove from the local array
-  const index = bookings.value.findIndex(booking => booking.id === bookingId);
-  if (index !== -1) {
-    bookings.value.splice(index, 1);
+const cancelBooking = async (booking_id: number) => {
+  try {
+    const index = bookings.value.findIndex(booking => booking.booking_id === booking_id);
+    
+    if (index !== -1) {
+      await axios.put(`http://localhost:5000/booking/cancel/${booking_id}`);
+      
+      bookings.value.splice(index, 1);
+
+      console.log(`Booking ${booking_id} cancelled successfully`);
+    }
+  } catch (err) {
+    console.error('Error cancelling booking:', err);
+    alert('Failed to cancel booking. Please try again.');
   }
 };
 
 const fetchUserBookings = async () =>{
   try{
-    let response = await axios.get("http://localhost:5000/get/userflight/101");
-    let userFlights = response.data.data.booking;
-    console.log(userFlights);
+    let response = await axios.get("http://localhost:5000/booking/1");
+    const allBookings = response.data.data.booking;
+    bookings.value = allBookings.filter(booking => 
+        booking.status === 'Confirmed'
+      );
+    console.log(bookings.value);
   }catch (err) {
     console.error('Error fetching bookings:', err);
   }
@@ -63,14 +74,32 @@ onMounted(() => {
         </div>
         
         <div v-else class="space-y-4">
-          <div v-for="booking in bookings" :key="booking.id" class="border rounded-lg p-4 shadow-sm relative">
+          <div 
+            v-for="booking in bookings" 
+            :key="`${booking.user_id}-${booking.flight_id}`" 
+            class="border rounded-lg p-6 shadow-sm relative bg-white hover:bg-gray-50"
+          >
             <button 
-              @click="cancelBooking(booking.id)" 
-              class="absolute top-4 right-4 text-gray-400 text-red-500"
+              @click="cancelBooking(booking.booking_id)" 
+              class="absolute top-4 right-4 text-gray-400 hover:text-red-500 font-bold text-xl"
               aria-label="Cancel booking"
             >
               ✕
             </button>
+            
+            <div class="flex items-center">
+              <div class="bg-blue-100 rounded-full p-3 mr-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold">Flight Booking Confirmed</h3>
+                <p class="text-gray-600">Flight ID: {{ booking.flight_id }}</p>
+                <p class="text-sm text-gray-500">User ID: {{ booking.user_id }}</p>
+                <p class="text-sm mt-2 text-blue-600">View full booking details</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
