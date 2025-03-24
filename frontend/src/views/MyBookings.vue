@@ -12,7 +12,10 @@ const cancelBooking = async (booking_id: number) => {
     const index = bookings.value.findIndex(booking => booking.booking_id === booking_id);
     
     if (index !== -1) {
-      await axios.put(`http://localhost:5000/booking/cancel/${booking_id}`);
+      await axios.post(`http://localhost:5100/booking_cancelled`, {
+        booking_id: booking_id,
+        user_id: 1,
+      });
       
       bookings.value.splice(index, 1);
 

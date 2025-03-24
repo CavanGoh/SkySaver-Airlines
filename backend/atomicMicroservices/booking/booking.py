@@ -79,13 +79,15 @@ def new_booking():
         ).first()
         
         if existing_booking:
-            return jsonify({
-                "code": 409, 
-                "data": {
-                    "booking": existing_booking.json()
-                },
-                "message": "User already has a booking for this flight."
-            }), 409
+            if existing_booking.status == "Confirmed":
+                return jsonify({
+                    "code": 409, 
+                    "data": {
+                        "booking": existing_booking.json()
+                    },
+                    "message": "User already has a booking for this flight."
+                }), 409
+                
             
         new_booking = Booking(
             user_id=data['user_id'],

@@ -152,7 +152,7 @@ const selectFlight = async (flight) => {
               type="date"
               id="date"
               v-model="flightSearch.date"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 date-picker-fix"
               required
             />
           </div>
@@ -253,3 +253,10 @@ const selectFlight = async (flight) => {
     </div>
   </div>
 </template>
+
+<style>
+.date-picker-fix {
+  position: relative;
+  z-index: 1; /* Ensure it's not above other elements when not focused */
+}
+</style>
