@@ -11,3 +11,14 @@ services:
       - .env # This loads the variables from .env file
   # networks:
   #   - flight-network
+
+  seat:
+    build:
+      context: ./atomicMicroservices/seatService
+      dockerfile: Dockerfile
+    image: edrictan/seat:1.0
+    container_name: seat
+    ports:
+      - "8080:8080"
+    # environment:
+    #   - dbURL=mysql+mysqlconnector://root@host.docker.internal:3306/book # set in example/resources/application.properties

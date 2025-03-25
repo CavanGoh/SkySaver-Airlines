@@ -132,6 +132,7 @@
                   </tr>
                 </thead>
                 <tbody>
+
                   <!-- Loop through flights and display each row -->
                   <tr v-for="(flight, index) in flights" :key="index" class="border-b hover:bg-gray-50">
                     <td class="py-4 px-6">{{ flight.departure }}</td>
@@ -152,6 +153,118 @@
       </div>
     </div>
 
+
+
+
+
+
+<!-- Seat Selection Modal -->
+<div v-if="showSeatModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">Select Your Seat</h2>
+            <button @click="showSeatModal = false" class="text-gray-500 hover:text-gray-700">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <div class="mb-4 flex justify-center">
+            <div class="flex items-center mr-4">
+              <div class="w-4 h-4 bg-blue-500 rounded mr-2"></div>
+              <span class="text-sm">Available</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-4 h-4 bg-gray-300 rounded mr-2"></div>
+              <span class="text-sm">Unavailable</span>
+            </div>
+          </div>
+          
+          <!-- Aircraft Layout -->
+          <div class="relative bg-gray-100 p-4 rounded-lg airplane-container">
+            <!-- Aircraft Nose - More Pointy -->
+            <div class="relative mb-6">
+              <div class="airplane-nose">
+                <div class="cockpit-windows">
+                  <div class="window"></div>
+                  <div class="window"></div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Seat Labels -->
+            <div class="flex justify-between px-2 mb-2">
+              <div class="flex justify-between w-[48%]">
+                <div class="text-center font-bold text-xs">A</div>
+                <div class="text-center font-bold text-xs">B</div>
+                <div class="text-center font-bold text-xs">C</div>
+              </div>
+              <div class="flex justify-between w-[48%]">
+                <div class="text-center font-bold text-xs">D</div>
+                <div class="text-center font-bold text-xs">E</div>
+                <div class="text-center font-bold text-xs">F</div>
+              </div>
+            </div>
+            
+            <!-- Seats -->
+            <div class="relative">
+              <div v-for="row in 15" :key="row" class="flex justify-between mb-2 items-center">
+                <div class="flex justify-between w-[48%]">
+                  <button 
+                    v-for="col in ['A', 'B', 'C']" 
+                    :key="`${row}${col}`"
+                    :class="[
+                      'w-[31%] h-8 rounded flex items-center justify-center text-xs font-medium',
+                      getSeatAvailability(row, col) ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-300 cursor-not-allowed'
+                    ]"
+                    :disabled="!getSeatAvailability(row, col)"
+                    @click="selectSeat(`${row}${col}`)"
+                  >
+                    {{ row }}{{ col }}
+                  </button>
+                </div>
+                
+                <!-- Row Number in Aisle -->
+                <div class="w-[4%] text-center font-bold text-xs">{{ row }}</div>
+                
+                <div class="flex justify-between w-[48%]">
+                  <button 
+                    v-for="col in ['D', 'E', 'F']" 
+                    :key="`${row}${col}`"
+                    :class="[
+                      'w-[31%] h-8 rounded flex items-center justify-center text-xs font-medium',
+                      getSeatAvailability(row, col) ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-300 cursor-not-allowed'
+                    ]"
+                    :disabled="!getSeatAvailability(row, col)"
+                    @click="selectSeat(`${row}${col}`)"
+                  >
+                    {{ row }}{{ col }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-6 flex justify-between">
+            <button 
+              @click="showSeatModal = false" 
+              class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button 
+              @click="confirmSeatSelection" 
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              :disabled="!selectedSeat"
+            >
+              Confirm Seat
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -172,7 +285,13 @@ export default {
         to: ''
       },
       flights: [],
-      hasSearched :false
+      hasSearched :false,
+
+      // Seat selection
+      showSeatModal: false,
+      seats: [],
+      selectedSeat: null,
+      currentFlight: null
     };
   },
   computed: {
@@ -280,7 +399,47 @@ export default {
     // Method to handle seat checkout
     checkoutSeats(flight) {
       console.log('Checking seats for flight:', flight);
-      // Implement your seat checkout logic here
+      this.currentFlight = flight;
+      
+      // Fetch seats for this flight
+      axios.get(`http://127.0.0.1:8080/seats/flight/${flight.id}`)
+        .then(response => {
+          console.log('Seats data:', response.data);
+          this.seats = response.data;
+          this.showSeatModal = true;
+          this.selectedSeat = null;
+        })
+        .catch(error => {
+          console.error('Error fetching seats:', error);
+          alert('Failed to load seat information. Please try again.');
+        });
+    },
+    
+    // Get seat availability
+    getSeatAvailability(row, col) {
+      const seatID = `${row}${col}`;
+      const seat = this.seats.find(s => s.seatID === seatID);
+      return seat ? seat.availability : false;
+    },
+    
+    // Select a seat
+    selectSeat(seatID) {
+      this.selectedSeat = seatID;
+      console.log(`Selected seat: ${seatID}`);
+    },
+    
+    // Confirm seat selection
+    confirmSeatSelection() {
+      if (!this.selectedSeat) return;
+      
+      alert(`You have selected seat ${this.selectedSeat} for your flight from ${this.currentFlight.departure} to ${this.currentFlight.destination}.`);
+      this.showSeatModal = false;
+      
+      // Here you would typically make an API call to reserve the seat
+      // axios.post('http://127.0.0.1:8080/seats/reserve', {
+      //   flightID: this.currentFlight.id,
+      //   seatID: this.selectedSeat
+      // })
     }
   }
 };
@@ -302,5 +461,52 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   width: 100%;
   height: 100%;
   cursor: pointer;
+}
+
+/* Aircraft styling */
+.airplane-container {
+  position: relative;
+  background-color: #f3f4f6;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+}
+
+.airplane-nose {
+  position: relative;
+  width: 120px;
+  height: 60px;
+  margin: 0 auto;
+  background-color: #e5e7eb;
+  border-top-left-radius: 60px;
+  border-top-right-radius: 60px;
+  overflow: hidden;
+}
+
+.airplane-nose:before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  background-color: #e5e7eb;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.cockpit-windows {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+}
+
+.window {
+  width: 15px;
+  height: 8px;
+  background-color: #93c5fd;
+  border-radius: 4px;
 }
 </style>
