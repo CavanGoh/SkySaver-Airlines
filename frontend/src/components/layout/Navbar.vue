@@ -9,6 +9,7 @@ const route = useRoute();
 const navigation = computed(() => [
   { name: 'Home', href: '/', current: route.path === '/' },
   { name: 'Book a Flight', href: '/book', current: route.path === '/book' },
+  { name: 'Smart Flex', href: '/flex-booking', current: route.path === '/flex-booking' },
   { name: 'My Bookings', href: '/my-bookings', current: route.path === '/my-bookings' },
   { name: 'Notifications', href: '/notifications', current: route.path === '/notifications' },
 ]);

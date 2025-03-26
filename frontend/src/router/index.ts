@@ -32,6 +32,11 @@ const router = createRouter({
       path: '/notifications',
       name: 'notifications',
       component: Notifications
+    },
+    {
+      path: '/flex-booking',
+      name: 'flex-booking',
+      component: SmartFlexBooking
     }
   ]
 });
