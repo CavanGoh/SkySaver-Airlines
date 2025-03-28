@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app)
 
 booking_URL = "http://localhost:5000/booking"
-
+flexSeat_URL = "http://localhost:5001/flexseat"
 @app.route("/booking_cancelled", methods=['POST'])
 def cancel_booking():
     details = request.get_json()
