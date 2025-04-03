@@ -2,6 +2,7 @@ import pika
 import json
 import time
 
+
 # Configuration
 RABBITMQ_HOST = "localhost"
 RABBITMQ_PORT = 5672

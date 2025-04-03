@@ -61,6 +61,8 @@ def publish_message(message):
         print(f"Error publishing message to RabbitMQ: {str(e)}")
         return False
 
+
+
 @app.route("/booking_cancelled", methods=['POST'])
 def cancel_booking():
     details = request.get_json()
@@ -69,17 +71,36 @@ def cancel_booking():
     response = requests.put(booking_URL + "/cancel/" + str(booking_id))
     
     if response.status_code == 200:
-
+        #hardcode until flight is ready
+        departure = "New York"
+        destination = "London"
+        departureDate = "2025-04-15"
+        flex_url = f"{flexSeat_URL}/match"
+        print(f"Calling FlexSeat API at: {flex_url}")
+            
+            # Make request to FlexSeat service
+        flex_response = requests.get(
+            flex_url, 
+            params={
+                "departure": departure,
+                "destination": destination,
+                "departureDate": departureDate
+            }
+        )
+        if flex_response.status_code == 200:
+            flex_data = flex_response.json().get("data", {})
+            print("FlexSeat match data:", flex_data)
+        
         notification_message = {
             "event_type": "booking_cancelled",
             "booking_id": booking_id,
             "timestamp": datetime.now().isoformat(),
             "details": {
-                "message": f"Booking #{booking_id} has been cancelled",
-                "status": "cancelled"
+            "message": f"Booking #{booking_id} has been cancelled",
+            "status": "cancelled"
             }
         }
-        
+            
 
         publish_result = publish_message(notification_message)
         
