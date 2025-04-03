@@ -19,9 +19,7 @@ exchange_type = "direct"
 routing_key = "notification"
 
 def publish_message(message):
-    """
-    Publish a message to RabbitMQ
-    """
+
     try:
 
         connection = pika.BlockingConnection(
