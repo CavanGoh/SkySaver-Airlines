@@ -3,8 +3,11 @@ import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
 import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { useAuthStore } from '../../stores/auth';
+
 
 const route = useRoute();
+const authStore = useAuthStore(); // Use the auth store
 
 const navigation = computed(() => [
   { name: 'Home', href: '/', current: route.path === '/' },
@@ -40,11 +43,22 @@ const navigation = computed(() => [
           </div>
         </div>
         <div class="hidden sm:ml-6 sm:flex sm:items-center">
-          <button
+          <div v-if="authStore.isAuthenticated" class="flex items-center space-x-4">
+            <span class="text-sm text-gray-700">Hello, {{ authStore.user.name }}</span>
+            <button
+              @click="authStore.logout"
+              class="rounded-md bg-gray-200 px-3.5 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300"
+            >
+              Logout
+            </button>
+          </div>
+          <router-link 
+            v-else
+            to="/login"
             class="rounded-md bg-blue-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
           >
             Login / Register
-          </button>
+          </router-link>
         </div>
         <div class="-mr-2 flex items-center sm:hidden">
           <DisclosureButton
@@ -75,11 +89,24 @@ const navigation = computed(() => [
         </router-link>
       </div>
       <div class="border-t border-gray-200 pb-3 pt-4">
-        <button
+        <div v-if="authStore.isAuthenticated">
+          <div class="px-4 py-2">
+            <p class="text-sm font-medium text-gray-700">{{ authStore.user.name }}</p>
+          </div>
+          <button
+            @click="authStore.logout"
+            class="block w-full px-4 py-2 text-left text-base font-medium text-red-600 hover:bg-gray-100"
+          >
+            Logout
+          </button>
+        </div>
+        <router-link
+          v-else
+          to="/login"
           class="block w-full px-4 py-2 text-center text-base font-medium text-blue-600 hover:bg-gray-100"
         >
           Login / Register
-        </button>
+        </router-link>
       </div>
     </DisclosurePanel>
   </Disclosure>
