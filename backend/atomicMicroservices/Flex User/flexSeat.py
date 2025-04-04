@@ -13,7 +13,7 @@ db = SQLAlchemy(app)
 
 class FlexSeat(db.Model):
     __tablename__ = 'flexSeat'
-    passengerId = db.Column(db.Integer, primary_key=True)
+    userId = db.Column(db.Integer, primary_key=True)
     startDestination = db.Column(db.String(100), primary_key=True)
     endDestination = db.Column(db.String(100), primary_key=True)
     startDateTime = db.Column(db.DateTime, primary_key=True)
@@ -22,7 +22,7 @@ class FlexSeat(db.Model):
 
     def json(self):
         return {
-        'passengerId': self.passengerId,
+        'userId': self.userId,
         'startDestination': self.startDestination,
         'endDestination': self.endDestination,
         'startDateTime': self.startDateTime.strftime('%Y-%m-%d %H:%M:%S'),
@@ -33,11 +33,11 @@ class FlexSeat(db.Model):
 
 @app.route('/flexseat', methods=['GET'])
 def get_all_flexseats():
-    passenger_id = request.args.get('passengerId')
-    if passenger_id:
-        ## if passengerId is passed as a query param, filter using it
+    user_id = request.args.get('userId')
+    if user_id:
+        ## if userId is passed as a query param, filter using it
         ## if not, return all records
-        records = FlexSeat.query.filter_by(passengerId=passenger_id).all()
+        records = FlexSeat.query.filter_by(userId=user_id).all()
     else:
         records = FlexSeat.query.all()
 
@@ -46,6 +46,84 @@ def get_all_flexseats():
         "data": [record.json() for record in records]
     })
 
+
+#WK added
+@app.route('/flexseat/match', methods=['GET'])
+def get_cancelled_match():
+    try:
+        departure = request.args.get('departure')
+        destination = request.args.get('destination')
+        departure_date_str = request.args.get('departureDate')
+        departure_time_str = request.args.get('departureTime', '00:00:00')  # Default to start of day if not provided
+        
+        # Input validation
+        if not all([departure, destination, departure_date_str]):
+            return jsonify({
+                "code": 400,
+                "message": "Missing required parameters: departure, destination, departureDate"
+            }), 400
+        
+        # Convert the departure date string to a datetime object
+        try:
+            # Check if time is already included in the date string
+            if 'T' in departure_date_str or ' ' in departure_date_str:
+                departure_datetime = datetime.fromisoformat(departure_date_str.replace('T', ' '))
+            else:
+                # Combine date and time
+                departure_datetime = datetime.strptime(
+                    f"{departure_date_str} {departure_time_str}", 
+                    '%Y-%m-%d %H:%M:%S'
+                )
+        except ValueError:
+            # Try alternate date format (MM-DD-YYYY)
+            try:
+                if '-' in departure_date_str:
+                    parts = departure_date_str.split('-')
+                    if len(parts[0]) == 2:  # MM-DD-YYYY format
+                        departure_date_str = f"{parts[2]}-{parts[0]}-{parts[1]}"
+                departure_datetime = datetime.strptime(
+                    f"{departure_date_str} {departure_time_str}", 
+                    '%Y-%m-%d %H:%M:%S'
+                )
+            except ValueError as e:
+                return jsonify({
+                    "code": 400,
+                    "message": f"Invalid date format: {str(e)}"
+                }), 400
+        
+        print(f"Searching for matches: {departure} → {destination} on {departure_datetime}")
+        
+        # Query the database for matching FlexSeat records
+        matches = FlexSeat.query.filter(
+            FlexSeat.startDestination == departure,
+            FlexSeat.endDestination == destination,
+            FlexSeat.startDateTime <= departure_datetime,
+            FlexSeat.endDateTime >= departure_datetime
+        ).all()
+        
+        matched_user_ids = [match.userId for match in matches]
+        
+        # Return only the matched userIds
+        return jsonify({
+            "code": 200,
+            "data": {
+                "userIds": matched_user_ids,
+                "count": len(matched_user_ids),
+                "searchCriteria": {
+                    "departure": departure,
+                    "destination": destination,
+                    "departureDateTime": departure_datetime.strftime('%Y-%m-%d %H:%M:%S')
+                }
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "code": 500,
+            "message": f"An error occurred: {str(e)}"
+        }), 500
+
+
 ## to create a new search
 @app.route('/flexseat/new', methods=['POST'])
 def create_flexseat():
@@ -53,7 +131,7 @@ def create_flexseat():
         data = request.get_json()
         ## converts the input JSON into a FlexSeat object
         new_record = FlexSeat(
-            passengerId=data['passengerId'],
+            userId=data['userId'],
             startDestination=data['startDestination'],
             endDestination=data['endDestination'],
             startDateTime=datetime.strptime(data['startDateTime'], '%Y-%m-%d %H:%M:%S'),
@@ -81,7 +159,7 @@ def delete_flexseat():
     try:
         data = request.get_json()
         record = FlexSeat.query.filter_by(
-            passengerId=data['passengerId'],
+            userId=data['userId'],
             startDestination=data['startDestination'],
             endDestination=data['endDestination'],
             startDateTime=datetime.strptime(data['startDateTime'], '%Y-%m-%d %H:%M:%S'),

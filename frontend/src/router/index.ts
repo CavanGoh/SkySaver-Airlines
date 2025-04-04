@@ -4,6 +4,7 @@ import StandardBooking from '../views/StandardBooking.vue';
 import SmartFlexBooking from '../views/SmartFlexBooking.vue';
 import MyBookings from '../views/MyBookings.vue';
 import Notifications from '../views/Notifications.vue';
+import Login from '../views/Login.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -37,6 +38,11 @@ const router = createRouter({
       path: '/flex-booking',
       name: 'flex-booking',
       component: SmartFlexBooking
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: Login
     }
   ]
 });

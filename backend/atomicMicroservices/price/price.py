@@ -49,7 +49,7 @@ def get_price():
     
     return jsonify({
         'price': price,
-        'currency': 'USD'
+        'currency': 'SGD'
     }), 200
 
 if __name__ == '__main__':
