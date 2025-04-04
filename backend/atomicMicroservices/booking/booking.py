@@ -3,10 +3,21 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_cors import CORS
 
+import os
+from os import environ
+
 app = Flask(__name__)
 CORS(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root@localhost:3306/booking'
+from dotenv import load_dotenv
+# Load environment variables from .env file
+load_dotenv()
+
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+     os.getenv("hostdbURL")+"/booking" or "mysql+mysqlconnector://root@host.docker.internal:3306/booking"
+)#checks in the ".env" file for "dbURL"
+
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root@localhost:3306/booking'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -16,6 +27,7 @@ class Booking(db.Model):
     booking_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, nullable=False)
     flight_id = db.Column(db.Integer, nullable=False)
+    seat_id= db.Column(db.String(50), nullable=False)
     status = db.Column(db.String(50), nullable=False)
 
     def json(self):
@@ -23,6 +35,7 @@ class Booking(db.Model):
             'booking_id': self.booking_id,
             'user_id': self.user_id,
             'flight_id': self.flight_id,
+            'seat_id': self.seat_id,
             'status': self.status,
         }
 
@@ -75,7 +88,8 @@ def new_booking():
         
         existing_booking = db.session.query(Booking).filter_by(
             user_id=data['user_id'], 
-            flight_id=data['flight_id']
+            flight_id=data['flight_id'],
+            seat_id=data['seat_id']
         ).first()
         
         if existing_booking:
@@ -92,6 +106,7 @@ def new_booking():
         new_booking = Booking(
             user_id=data['user_id'],
             flight_id=data['flight_id'],
+            seat_id=data['seat_id'],
             status="Confirmed"
         )
         
@@ -113,4 +128,4 @@ def new_booking():
         }), 500
     
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)

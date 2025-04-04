@@ -1,3 +1,7 @@
+networks:
+  flight-network:
+    driver: bridge
+    name: flight-network
 services:
   flight:
     build:
@@ -6,11 +10,11 @@ services:
     image: edrictan/flight:1.0
     container_name: flight
     ports:
-      - "5000:5000"
+      - "5000:5000" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports 
     env_file: #env_file directive automatically loads the environment variables from the .env
       - .env # This loads the variables from .env file
-  # networks:
-  #   - flight-network
+    networks:
+      - flight-network
 
   seat:
     build:
@@ -19,6 +23,38 @@ services:
     image: edrictan/seat:1.0
     container_name: seat
     ports:
-      - "8080:8080"
+      - "8080:8080" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports
+    networks:
+      - flight-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker # Set the active profile to "docker"
+    #   - dbURL=mysql+mysqlconnector://root@host.docker.internal:3306/book # set in example/resources/application.properties
+
+# Start of Booking microservice...comment out for testing
+  # booking:
+  #   build:
+  #     context: ./atomicMicroservices/booking
+  #     dockerfile: Dockerfile
+  #   image: edrictan/booking:1.0
+  #   container_name: booking
+  #   ports:
+  #     - "5001:5001" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports
+  #   networks:
+  #   - flight-network
+    # environment:
+      # - dbURL=mysql+mysqlconnector://root@host.docker.internal:3306/book # set in example/resources/application.properties
+  # book-flight:
+  #   build:
+  #     context: ./compositeMicroservices
+  #     dockerfile: BookFlight/Dockerfile
+  #   image: edrictan/book-flight:1.0
+  #   container_name: book-flight
+  #   ports:
+  #     - "5002:5002" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports
+  #   networks:
+  #     - flight-network
     # environment:
     #   - dbURL=mysql+mysqlconnector://root@host.docker.internal:3306/book # set in example/resources/application.properties
+
+
+

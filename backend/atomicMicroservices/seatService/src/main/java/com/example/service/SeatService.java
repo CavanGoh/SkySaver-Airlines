@@ -23,12 +23,16 @@ public class SeatService {
 
     // Method to update seat availability
     public void updateSeatAvailability(int flightID, String seatID, boolean availability) {
-        // Optional<Seat> seatOptional = getSeatById(flightID, seatID);
-        // if (seatOptional.isPresent()) {
-        //     Seat seat = seatOptional.get();
-        //     seat.setAvailability(availability);
-        //     seatRepository.save(seat); // Update seat availability in DB
-        // }
+        SeatKey seatKey = new SeatKey(seatID, flightID); // Create composite key from flightID and seatID
+        Optional<Seat> seatOptional = seatRepository.findById(seatKey); // Find the seat by composite key
+
+        if (seatOptional.isPresent()) {
+            Seat seat = seatOptional.get(); // Get the seat from the result
+            seat.setAvailability(availability); // Set the new availability status
+            seatRepository.save(seat); // Save the updated seat in the repository (this updates the database)
+        } else {
+            throw new RuntimeException("Seat not found for the provided flight and seat ID.");
+        }
     }
 
     public Optional<Seat> getSeatById(int flightID, String seatID) {

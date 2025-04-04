@@ -41,7 +41,7 @@ def format_date(date_str):
     except ValueError:
         return date_str  # Return the original string if conversion fails
 
-# Get all flights
+# Get filtered flights BY departure, destination, and the flights taht fall between the 2 dates
 @app.route("/flights", methods=['GET'])
 def get_filtered_flights():
     try:
