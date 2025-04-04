@@ -9,8 +9,12 @@ app = Flask(__name__)
 CORS(app)
 
 # URLs for microservices
-booking_URL = "http://localhost:5000/booking"
-flexSeat_URL = "http://localhost:5001/flexseat"
+# booking_URL = "http://localhost:5000/booking"
+# flexSeat_URL = "http://localhost:5001/flexseat"
+
+booking_URL = "http://localhost:5001/booking"
+flexSeat_URL = "http://localhost:5003/flexseat"
+seat_URL="http://localhost:8080/seats/flight"
 
 amqp_host = "localhost"
 amqp_port = 5672
