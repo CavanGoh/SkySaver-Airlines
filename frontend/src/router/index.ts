@@ -5,6 +5,7 @@ import SmartFlexBooking from '../views/SmartFlexBooking.vue';
 import MyBookings from '../views/MyBookings.vue';
 import Notifications from '../views/Notifications.vue';
 import Login from '../views/Login.vue';
+import Register from '../views/Register.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -43,6 +44,11 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: Login
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: Register
     }
   ]
 });

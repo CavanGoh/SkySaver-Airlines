@@ -47,5 +47,11 @@ const handleLogin = async () => {
         {{ authStore.loading ? 'Loading...' : 'Login' }}
       </button>
     </form>
+    <div class="mt-6 text-center">
+      <p class="text-gray-600">
+        Don't have an account? 
+        <router-link to="/register" class="text-blue-600 hover:underline">Register now</router-link>
+      </p>
+    </div>
   </div>
 </template>

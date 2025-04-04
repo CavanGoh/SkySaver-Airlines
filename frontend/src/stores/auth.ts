@@ -48,6 +48,25 @@ export const useAuthStore = defineStore('auth', {
       // Clear state and localStorage
       this.user = null
       localStorage.removeItem('user')
-    }
+    },
+
+async register(name: string, email: string, password: string) {
+  this.loading = true;
+  this.error = null;
+  
+  try {
+    await axios.post('http://localhost:5500/register', {
+      name,
+      email,
+      password
+    });
+    return await this.login(email, password);
+  } catch (error: any) {
+    this.error = error.response?.data?.message || 'Registration failed';
+    throw error;
+  } finally {
+    this.loading = false;
+  }
+}
   }
 })
