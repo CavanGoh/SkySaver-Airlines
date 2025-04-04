@@ -1,6 +1,7 @@
 <script>
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
+import { useAuthStore } from '../stores/auth.ts';
 
 // const activeTab = ref('upcoming');
 // const bookings = ref([]);
@@ -53,6 +54,18 @@ export default {
       flexBookings: []  // (This may be used for different types of bookings if needed)
     };
   },
+  setup() {
+    const authStore = useAuthStore();
+    return { authStore };
+  },
+  computed: {
+    isLoggedIn() {
+      return this.authStore.isAuthenticated;
+    },
+    userId() {
+      return this.authStore.user?.id || null;
+    }
+  },
   methods: {
     // Function to handle booking cancellation
     async cancelBooking(booking_id) {
@@ -62,7 +75,7 @@ export default {
         if (index !== -1) {
           await axios.post(`http://localhost:5100/booking_cancelled`, {
             booking_id: booking_id,
-            user_id: 1,
+            user_id: this.userId,
           });
 
           this.bookings.splice(index, 1);
@@ -78,7 +91,7 @@ export default {
     // Function to fetch the user's bookings
     async fetchUserBookings() {
       try {
-        let response = await axios.get("http://localhost:5001/booking/1");
+        let response = await axios.get("http://localhost:5001/booking/" + this.userId);
         const allBookings = response.data.data.booking;
         this.bookings = allBookings.filter(booking =>
           booking.status === 'Confirmed'

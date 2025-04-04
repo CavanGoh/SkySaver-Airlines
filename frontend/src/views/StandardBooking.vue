@@ -131,6 +131,7 @@
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import SmartFlexBooking from './SmartFlexBooking.vue';
+import { useAuthStore } from '../stores/auth.ts';
 
 export default {
   components: {
@@ -155,7 +156,16 @@ export default {
   },
   setup() {
     const router = useRouter();
-    return { router };
+    const authStore = useAuthStore();
+    return { router, authStore };
+  },
+  computed: {
+    isLoggedIn() {
+      return this.authStore.isAuthenticated;
+    },
+    userId() {
+      return this.authStore.user?.id || null;
+    }
   },
   methods: {
     formatDate(date) {
@@ -243,22 +253,27 @@ export default {
     async confirmSeatSelection() {
       if (!this.selectedSeat) return;
 
+      if (!this.isLoggedIn) {
+        alert("Please log in to book a flight");
+        this.router.push('/login');
+        return;
+      }
+
       alert(`You have selected seat ${this.selectedSeat} for your flight from ${this.currentFlight.departure} to ${this.currentFlight.destination}.`);
       this.showSeatModal = false;
-
       try {
+       
         const response = await axios.post('http://localhost:5002/book_flight', {
-          user_id: 1,
+          user_id: this.userId,
           flight_id: this.flightId,
           seat_id: this.selectedSeat
         });
 
-        // console.log('Booking created:', response.data);
+        console.log('Booking created:', response.data);
         this.router.push('/my-bookings');
       } catch (error) {
         console.error('Error creating booking:', error);
       }
-
 
       // Here you would typically make an API call to reserve the seat
       // axios.post('http://127.0.0.1:8080/seats/reserve', {
