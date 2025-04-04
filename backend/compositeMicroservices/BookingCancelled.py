@@ -6,7 +6,9 @@ import json
 from datetime import datetime
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+
 
 # URLs for microservices
 # booking_URL = "http://localhost:5000/booking"

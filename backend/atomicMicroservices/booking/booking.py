@@ -7,7 +7,9 @@ import os
 from os import environ
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+
 
 from dotenv import load_dotenv
 # Load environment variables from .env file

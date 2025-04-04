@@ -9,7 +9,9 @@ from flask_cors import CORS
 from datetime import datetime
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+
 
 # Load environment variables from .env file
 load_dotenv()

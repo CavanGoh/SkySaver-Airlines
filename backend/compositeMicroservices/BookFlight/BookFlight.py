@@ -8,7 +8,9 @@ from wrapperServices.invokes import invoke_http
 
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+
 
 booking_URL = "http://localhost:5001/booking/new"
 seat_URL="http://localhost:8080/seats"
