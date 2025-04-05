@@ -84,87 +84,78 @@ const submitFlexBooking = async () => {
 </script>
 
 <template>
-  <div>
-    <h1 class="text-3xl font-bold text-gray-900 mb-4">Smart Flex Booking</h1>
-    <p class="text-gray-600 mb-8">
-      Get up to 50% off by being flexible with your travel dates. We'll notify you when discounted seats become available!
-    </p>
+  <div class="booking-page">
+    <div class="booking-header">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 class="text-4xl font-bold text-white mb-4">Smart Flex Booking</h1>
+        <p class="text-white text-lg max-w-2xl">Get up to 50% off by being flexible with your travel dates. We'll notify you when discounted seats become available!</p>
+      </div>
+    </div>
 
-    <div class="bg-white rounded-lg shadow-sm p-6">
-      <form @submit.prevent="submitFlexBooking" class="space-y-6">
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <div>
-            <label for="flex-departure" class="block text-sm font-medium text-gray-700">From</label>
-            <input
-              type="text"
-              id="flex-departure"
-              v-model="flexBooking.departure"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              placeholder="City or airport"
-              required
-            />
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="bg-white rounded-lg shadow-lg p-8 -mt-16 relative z-10">
+        <form @submit.prevent="submitFlexBooking" class="space-y-6">
+          <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div>
+              <label for="flex-departure" class="block text-sm font-medium text-gray-700">From</label>
+              <input
+                type="text"
+                id="flex-departure"
+                v-model="flexBooking.departure"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                placeholder="City or airport"
+                required
+              />
+            </div>
+            <div>
+              <label for="flex-destination" class="block text-sm font-medium text-gray-700">To</label>
+              <input
+                type="text"
+                id="flex-destination"
+                v-model="flexBooking.destination"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                placeholder="City or airport"
+                required
+              />
+            </div>
           </div>
-          <div>
-            <label for="flex-destination" class="block text-sm font-medium text-gray-700">To</label>
-            <input
-              type="text"
-              id="flex-destination"
-              v-model="flexBooking.destination"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              placeholder="City or airport"
-              required
-            />
+          
+          <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div>
+              <label for="flex-start-date" class="block text-sm font-medium text-gray-700">Earliest Travel Date</label>
+              <input
+                type="date"
+                id="flex-start-date"
+                v-model="flexBooking.startDate"
+                :min="today"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 date-picker-fix"
+                required
+              />
+            </div>
+            <div>
+              <label for="flex-end-date" class="block text-sm font-medium text-gray-700">Latest Travel Date</label>
+              <input
+                type="date"
+                id="flex-end-date"
+                v-model="flexBooking.endDate"
+                :min="minEndDate"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 date-picker-fix"
+                required
+              />
+            </div>
           </div>
-        </div>
-        
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+         
           <div>
-            <label for="flex-start-date" class="block text-sm font-medium text-gray-700">Earliest Travel Date</label>
-            <input
-              type="date"
-              id="flex-start-date"
-              v-model="flexBooking.startDate"
-              :min="today"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 date-picker-fix"
-              required
-            />
+            <button
+              type="submit"
+              class="w-full sm:w-auto rounded-md bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              :disabled="isLoading"
+            >
+              {{ isLoading ? 'Processing...' : 'Book Smart Flex Seat' }}
+            </button>
           </div>
-          <div>
-            <label for="flex-end-date" class="block text-sm font-medium text-gray-700">Latest Travel Date</label>
-            <input
-              type="date"
-              id="flex-end-date"
-              v-model="flexBooking.endDate"
-              :min="minEndDate"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 date-picker-fix"
-              required
-            />
-          </div>
-        </div>
-        
-        <div>
-          <label for="flex-passengers" class="block text-sm font-medium text-gray-700">Number of Passengers</label>
-          <input
-            type="number"
-            id="flex-passengers"
-            v-model="flexBooking.passengers"
-            min="1"
-            max="9"
-            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            required
-          />
-        </div>
-        
-        <div>
-          <button
-            type="submit"
-            class="w-full sm:w-auto rounded-md bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-            :disabled="isLoading"
-          >
-            {{ isLoading ? 'Processing...' : 'Book Smart Flex Seat' }}
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   </div>
 </template>

@@ -130,16 +130,11 @@
 
 import axios from 'axios';
 import { useRouter } from 'vue-router';
-import SmartFlexBooking from './SmartFlexBooking.vue';
 import { useAuthStore } from '../stores/auth.ts';
 
 export default {
-  components: {
-    SmartFlexBooking
-  },
   data() {
     return {
-      bookingType: 'standard',
       showSeatModal: false,
       flightSearch: {
         departure: '',
@@ -262,7 +257,6 @@ export default {
       alert(`You have selected seat ${this.selectedSeat} for your flight from ${this.currentFlight.departure} to ${this.currentFlight.destination}.`);
       this.showSeatModal = false;
       try {
-       
         const response = await axios.post('http://localhost:5002/book_flight', {
           user_id: this.userId,
           flight_id: this.flightId,
@@ -287,27 +281,17 @@ export default {
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Book Your Flight</h1>
 
-    <!-- Booking Type Toggle -->
-    <div class="mb-8">
-      <div class="border-b border-gray-200">
-        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-          <button v-for="type in ['standard', 'smart-flex']" :key="type" @click="bookingType = type" :class="[
-            bookingType === type
-              ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-            'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
-          ]">
-            {{ type === 'standard' ? 'Standard Booking' : 'Smart Flex Booking' }}
-          </button>
-        </nav>
+    <div class="booking-page">
+    <div class="booking-header">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 class="text-4xl font-bold text-white mb-4">Book Your Flight</h1>
+        <p class="text-white text-lg max-w-2xl">Search for flights to destinations around the world and book your next adventure with SkySaver Airlines.</p>
       </div>
     </div>
 
     <!-- Standard Booking Form -->
-    <div v-if="bookingType === 'standard'" class="bg-white rounded-lg shadow-sm p-6 mb-8">
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
       <form @submit.prevent="searchFlights" class="space-y-6">
         <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
@@ -330,12 +314,6 @@ export default {
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 date-picker-fix"
               required />
           </div>
-          <div>
-            <label for="passengers" class="block text-sm font-medium text-gray-700">Passengers</label>
-            <input type="number" id="passengers" v-model="flightSearch.passengers" min="1" max="9"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-              required />
-          </div>
         </div>
         <div>
           <button type="submit"
@@ -345,11 +323,6 @@ export default {
           </button>
         </div>
       </form>
-    </div>
-
-    <!-- Smart Flex Booking Form -->
-    <div v-else class="bg-white rounded-lg shadow-sm p-6 mb-8">
-      <SmartFlexBooking />
     </div>
 
     <!-- Search Results -->
@@ -412,11 +385,6 @@ export default {
         </div>
       </div>
     </div>
-
-
-
-
-
 
     <!-- Seat Selection Modal -->
     <div v-if="showSeatModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -502,7 +470,6 @@ export default {
               Cancel
             </button>
             <button @click="confirmSeatSelection" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-              <!-- :disabled="!selectedSeat" -->
               Confirm Seat
             </button>
           </div>
@@ -513,6 +480,32 @@ export default {
 </template>
 
 <style>
+.booking-page {
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+.booking-header {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url('https://images.unsplash.com/photo-1500835556837-99ac94a94552?q=80&w=2069&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  padding: 6rem 0 8rem;
+  position: relative;
+}
+
+.booking-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background-image: url('data:image/svg+xml;charset=utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 70" preserveAspectRatio="none"%3E%3Cpath fill="%23f8fafc" d="M0,0 C240,70 480,70 720,35 C960,0 1200,0 1440,35 L1440,70 L0,70 Z"%3E%3C/path%3E%3C/svg%3E');
+  background-size: cover;
+  background-position: center;
+}
+
 .date-picker-fix {
   position: relative;
   z-index: 1;

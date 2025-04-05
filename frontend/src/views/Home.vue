@@ -1,512 +1,452 @@
 <template>
-  <div>
+  <div class="home-container">
     <!-- Hero Section -->
-    <div class="relative isolate overflow-hidden bg-gradient-to-b from-blue-100/20">
-      <div class="mx-auto max-w-7xl pb-24 pt-10 sm:pb-32 lg:gap-x-8">
-        <div class="px-6 lg:px-0">
-          <div class="mx-auto max-w-2xl">
-            <div class="max-w-lg">
-              <h1 class="mt-10 text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-                Find Affordable Flights with SkySaver
-              </h1>
-              <p class="mt-6 text-lg leading-8 text-gray-600">
-                Book your next adventure at the best prices. Choose between standard bookings or try our Smart Flex
-                option for last-minute deals.
-              </p>
-            </div>
-
-            <!-- Search Form -->
-            <div class="mt-10 bg-white p-6 rounded-lg shadow-lg">
-              <form @submit.prevent="searchFlights" class="space-y-6">
-                <div class="space-y-4">
-                  <div>
-                    <label for="departure" class="block text-sm font-medium text-gray-700">Departure</label>
-                    <div class="relative mt-1">
-                      <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" 
-                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M2 22h20"></path>
-                          <path d="M6.36 17.4L4 17l-2-4 1.1-.5m13.26 5L18 17l2-4-1.1-.5M2 12h20M2 7h20M6.5 2h11"></path>
-                          <path d="M9 2v5.2M15 2v5.2"></path>
-                        </svg>
-                      </span>
-                      <input type="text" id="departure" v-model="searchForm.departure"
-                        class="block w-full rounded-md border-gray-300 pl-10 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="From where?" 
-                        required/>
-                    </div>
-                  </div>
-                  <div>
-                    <label for="destination" class="block text-sm font-medium text-gray-700">Destination</label>
-                    <div class="relative mt-1">
-                      <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" 
-                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M22 12h-20"></path>
-                          <path d="M5.45 5.11L2 12v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
-                          <line x1="12" y1="16" x2="12" y2="20"></line>
-                          <line x1="8" y1="20" x2="16" y2="20"></line>
-                        </svg>
-                      </span>
-                      <input type="text" id="destination" v-model="searchForm.destination"
-                        class="block w-full rounded-md border-gray-300 pl-10 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="Where to?" 
-                        required/>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Availability Section -->
-                <div class="space-y-3">
-  <h3 class="text-sm font-medium text-gray-700">Availability</h3>
-  <div class="grid grid-cols-2 gap-4">
-    <div>
-      <label for="dateFrom" class="block text-sm font-medium text-gray-700">Date From</label>
-      <div class="relative mt-1">
-        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" 
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-        </span>
-        <input 
-          type="date" 
-          id="dateFrom" 
-          v-model="searchForm.dateFrom"
-          :min="todayFormatted"
-          :max="searchForm.dateTo"
-          class="block w-full rounded-md border-gray-300 pl-10 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          @change="validateDates('from')"
-          required
-        />
+    <section class="hero-section">
+      <div class="hero-content">
+        <h1 class="main-title">Explore the World with SkySaver Airlines</h1>
+        <p class="subtitle">Fly to your dream destinations with comfort and style</p>
+        <router-link to="book" class="cta-button">Book Now</router-link>
       </div>
-      <p v-if="dateErrors.from" class="mt-1 text-sm text-red-600">{{ dateErrors.from }}</p>
-    </div>
-    <div>
-      <label for="dateTo" class="block text-sm font-medium text-gray-700">Date To</label>
-      <div class="relative mt-1">
-        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" 
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-        </span>
-        <input 
-          type="date" 
-          id="dateTo" 
-          v-model="searchForm.dateTo"
-          :min="searchForm.dateFrom || todayFormatted"
-          class="block w-full rounded-md border-gray-300 pl-10 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          @change="validateDates('to')"
-          required
-        />
-      </div>
-      <p v-if="dateErrors.to" class="mt-1 text-sm text-red-600">{{ dateErrors.to }}</p>
-    </div>
-  </div>
-</div>
+    </section>
 
-                <button type="submit"
-                  class="w-full rounded-md bg-blue-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition duration-200">
-                  Search Flights
-                </button>
-                <div v-if="hasSearched && flights.length===0" style="color:red">No flights found</div>
-              </form>
-            </div>
-
-            <div v-if="flights.length > 0" class="showFlights mt-10">
-              <!-- Flight Table -->
-              <table class="w-full table-auto border-separate border-spacing-0">
-                <thead>
-                  <tr class="text-left text-sm font-medium text-gray-800 bg-gray-100">
-                    <th class="py-3 px-6">Departure</th>
-                    <th class="py-3 px-6">Departure Date</th>
-                    <th class="py-3 px-6">Destination</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-
-                  <!-- Loop through flights and display each row -->
-                  <tr v-for="(flight, index) in flights" :key="index" class="border-b hover:bg-gray-50">
-                    <td class="py-4 px-6">{{ flight.departure }}</td>
-                    <td class="py-4 px-6">{{ flight.departureDate }}</td>
-                    <td class="py-4 px-6">{{ flight.destination }}</td>
-                    <td class="py-4 px-6">
-                      <button @click="checkoutSeats(flight)"
-                        class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition duration-200">
-                        Check Seats
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+    <!-- Featured Destinations -->
+    <section class="featured-destinations">
+      <h2 class="section-title">Popular Destinations</h2>
+      <div class="destinations-grid">
+        <div class="destination-card" v-for="(destination, index) in destinations" :key="index">
+          <div class="destination-image" :style="{ backgroundImage: `url(${destination.imageUrl})` }">
+            <div class="destination-overlay">
+              <h3>{{ destination.name }}</h3>
+              <p>{{ destination.subtitle }}</p>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
+    <!-- Why Choose Us -->
+    <section class="features-section">
+      <h2 class="section-title">Why Choose SkySaver</h2>
+      <div class="features-grid">
+        <div class="feature-card" v-for="(feature, index) in features" :key="index">
+          <div class="feature-icon" v-html="feature.icon"></div>
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+        </div>
+      </div>
+    </section>
 
-
-
-
-
-<!-- Seat Selection Modal -->
-<div v-if="showSeatModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div class="p-6">
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold text-gray-800">Select Your Seat</h2>
-            <button @click="showSeatModal = false" class="text-gray-500 hover:text-gray-700">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          
-          <div class="mb-4 flex justify-center">
-            <div class="flex items-center mr-4">
-              <div class="w-4 h-4 bg-blue-500 rounded mr-2"></div>
-              <span class="text-sm">Available</span>
-            </div>
-            <div class="flex items-center">
-              <div class="w-4 h-4 bg-gray-300 rounded mr-2"></div>
-              <span class="text-sm">Unavailable</span>
-            </div>
-          </div>
-          
-          <!-- Aircraft Layout -->
-          <div class="relative bg-gray-100 p-4 rounded-lg airplane-container">
-            <!-- Aircraft Nose - More Pointy -->
-            <div class="relative mb-6">
-              <div class="airplane-nose">
-                <div class="cockpit-windows">
-                  <div class="window"></div>
-                  <div class="window"></div>
-                </div>
+    <!-- Testimonials -->
+    <section class="testimonials-section">
+      <h2 class="section-title">What Our Passengers Say</h2>
+      <div class="testimonials-carousel">
+        <div class="testimonial-card" v-for="(testimonial, index) in testimonials" :key="index">
+          <div class="testimonial-content">
+            <p class="testimonial-text">"{{ testimonial.text }}"</p>
+            <div class="testimonial-author">
+              <div class="author-avatar" :style="{ backgroundImage: `url(${testimonial.avatar})` }"></div>
+              <div class="author-info">
+                <h4>{{ testimonial.name }}</h4>
+                <p>{{ testimonial.location }}</p>
               </div>
             </div>
-            
-            <!-- Seat Labels -->
-            <div class="flex justify-between px-2 mb-2">
-              <div class="flex justify-between w-[48%]">
-                <div class="text-center font-bold text-xs">A</div>
-                <div class="text-center font-bold text-xs">B</div>
-                <div class="text-center font-bold text-xs">C</div>
-              </div>
-              <div class="flex justify-between w-[48%]">
-                <div class="text-center font-bold text-xs">D</div>
-                <div class="text-center font-bold text-xs">E</div>
-                <div class="text-center font-bold text-xs">F</div>
-              </div>
-            </div>
-            
-            <!-- Seats -->
-            <div class="relative">
-              <div v-for="row in 15" :key="row" class="flex justify-between mb-2 items-center">
-                <div class="flex justify-between w-[48%]">
-                  <button 
-                    v-for="col in ['A', 'B', 'C']" 
-                    :key="`${row}${col}`"
-                    :class="[
-                      'w-[31%] h-8 rounded flex items-center justify-center text-xs font-medium',
-                      getSeatAvailability(row, col) ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-300 cursor-not-allowed'
-                    ]"
-                    :disabled="!getSeatAvailability(row, col)"
-                    @click="selectSeat(`${row}${col}`)"
-                  >
-                    {{ row }}{{ col }}
-                  </button>
-                </div>
-                
-                <!-- Row Number in Aisle -->
-                <div class="w-[4%] text-center font-bold text-xs">{{ row }}</div>
-                
-                <div class="flex justify-between w-[48%]">
-                  <button 
-                    v-for="col in ['D', 'E', 'F']" 
-                    :key="`${row}${col}`"
-                    :class="[
-                      'w-[31%] h-8 rounded flex items-center justify-center text-xs font-medium',
-                      getSeatAvailability(row, col) ? 'bg-blue-500 text-white hover:bg-blue-600' : 'bg-gray-300 cursor-not-allowed'
-                    ]"
-                    :disabled="!getSeatAvailability(row, col)"
-                    @click="selectSeat(`${row}${col}`)"
-                  >
-                    {{ row }}{{ col }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="mt-6 flex justify-between">
-            <button 
-              @click="showSeatModal = false" 
-              class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-            >
-              Cancel
-            </button>
-            <button 
-              @click="confirmSeatSelection" 
-              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              :disabled="!selectedSeat"
-            >
-              Confirm Seat
-            </button>
           </div>
         </div>
       </div>
-    </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="newsletter-section">
+      <div class="newsletter-content">
+        <h2>Stay Updated with Special Offers</h2>
+        <p>Subscribe to our newsletter and never miss our promotions</p>
+        <div class="newsletter-form">
+          <input type="email" placeholder="Your email address" />
+          <button>Subscribe</button>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
-
 export default {
   data() {
     return {
-      searchForm: {
-        departure: '',
-        destination: '',
-        dateFrom: '',
-        dateTo: ''
-      },
-      dateErrors: {
-        from: '',
-        to: ''
-      },
-      flights: [],
-      hasSearched :false,
-
-      // Seat selection
-      showSeatModal: false,
-      seats: [],
-      selectedSeat: null,
-      currentFlight: null
+      destinations: [
+        {
+          name: "Paris, France",
+          subtitle: "The City of Light",
+          imageUrl: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=2073&auto=format&fit=crop"
+        },
+        {
+          name: "Tokyo, Japan",
+          subtitle: "Where Tradition Meets Innovation",
+          imageUrl: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1988&auto=format&fit=crop"
+        },
+        {
+          name: "Santorini, Greece",
+          subtitle: "Paradise on Earth",
+          imageUrl: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?q=80&w=2069&auto=format&fit=crop"
+        },
+        {
+          name: "New York, USA",
+          subtitle: "The City That Never Sleeps",
+          imageUrl: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&w=2070&auto=format&fit=crop"
+        },
+        {
+          name: "Bali, Indonesia",
+          subtitle: "Island of the Gods",
+          imageUrl: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=2038&auto=format&fit=crop"
+        },
+        {
+          name: "Dubai, UAE",
+          subtitle: "City of Gold",
+          imageUrl: "https://images.unsplash.com/photo-1518684079-3c830dcef090?q=80&w=2069&auto=format&fit=crop"
+        }
+      ],
+      features: [
+        {
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
+          title: "Competitive Prices",
+          description: "Enjoy the best value for your money with our transparent pricing policy."
+        },
+        {
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a.75.75 0 01.75-.75A2.25 2.25 0 0116.5 4.5c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 01-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 00-1.423-.23H5.904M14.25 9h2.25M5.904 18.75c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 01-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 10.203 4.167 9.75 5 9.75h1.053c.472 0 .745.556.5.96a8.958 8.958 0 00-1.302 4.665c0 1.194.232 2.333.654 3.375z" /></svg>',
+          title: "Premium Comfort",
+          description: "Experience luxury and comfort with our modern aircraft fleet."
+        },
+        {
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" /></svg>',
+          title: "Flexible Options",
+          description: "Choose from a variety of fare options to suit your travel needs."
+        },
+        {
+          icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" /></svg>',
+          title: "Reliable Service",
+          description: "Count on our punctuality and dedication to customer satisfaction."
+        }
+      ],
+      testimonials: [
+        {
+          text: "SkySaver Airlines made my trip to Europe amazing! The service was exceptional, and the staff went above and beyond.",
+          name: "Sarah Johnson",
+          location: "New York, USA",
+          avatar: "https://randomuser.me/api/portraits/women/32.jpg"
+        },
+        {
+          text: "Flying with SkySaver has been consistently pleasant. Their prices are competitive, and the comfort level is outstanding.",
+          name: "Michael Chen",
+          location: "Toronto, Canada",
+          avatar: "https://randomuser.me/api/portraits/men/44.jpg"
+        },
+        {
+          text: "I appreciate the punctuality and professionalism of SkySaver. They've become my go-to airline for all my travels.",
+          name: "Emma Rodriguez",
+          location: "London, UK",
+          avatar: "https://randomuser.me/api/portraits/women/63.jpg"
+        }
+      ]
     };
-  },
-  computed: {
-    // Format today's date as YYYY-MM-DD for the min attribute
-    todayFormatted() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-  },
-  methods: {
-    // Validate dates
-    validateDates(field) {
-      // Clear previous errors
-      this.dateErrors.from = '';
-      this.dateErrors.to = '';
-      
-      const { dateFrom, dateTo } = this.searchForm;
-      
-      // Check if dates are provided
-      if (!dateFrom && !dateTo) return;
-      
-      // Convert string dates to Date objects for comparison
-      const fromDate = dateFrom ? new Date(dateFrom) : null;
-      const toDate = dateTo ? new Date(dateTo) : null;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Set to beginning of day for fair comparison
-      
-      // Validate "Date From" is not before today
-      if (fromDate && fromDate < today) {
-        this.dateErrors.from = 'Date cannot be in the past';
-        this.searchForm.dateFrom = this.todayFormatted;
-      }
-      
-      // Validate date relationship only if both dates are provided
-      if (fromDate && toDate) {
-        if (fromDate > toDate) {
-          if (field === 'from') {
-            this.dateErrors.from = 'Date From cannot be after Date To';
-            // You could automatically adjust the date if desired:
-            // this.searchForm.dateFrom = this.searchForm.dateTo;
-          } else {
-            this.dateErrors.to = 'Date To cannot be before Date From';
-            // You could automatically adjust the date if desired:
-            // this.searchForm.dateTo = this.searchForm.dateFrom;
-          }
-        }
-      }
-    },
-    
-    // Format date for display in DD-MM-YYYY format (for API calls)
-    formatDateForAPI(apiDate) {
-      if (!apiDate) return '';
-      
-      const [year, month, day] = apiDate.split('-');
-      return `${day}-${month}-${year}`;
-    },
-    
-    // Modified search flights method
-    searchFlights() {
-      // Validate dates before submitting
-      this.validateDates('both');
-      
-      // Don't proceed if there are validation errors
-      if (this.dateErrors.from || this.dateErrors.to) {
-        return;
-      }
-      
-      // Rest of your search logic
-      const { departure, destination, dateFrom, dateTo } = this.searchForm;
-      
-      // Format dates for API if needed (DD-MM-YYYY)
-      const dateFromFormatted = this.formatDateForAPI(dateFrom);
-      const dateToFormatted = this.formatDateForAPI(dateTo);
-      
-      axios.get('http://127.0.0.1:5000/flights', {
-        params: {
-          departure,
-          destination,
-          dateFrom: dateFromFormatted, // Send in DD-MM-YYYY format
-          dateTo: dateToFormatted // Send in DD-MM-YYYY format
-        }
-      })
-      .then(response => {
-        this.hasSearched =true;
-
-        if (response.data.code === 200) {
-          console.log(response);
-          this.flights = response.data.data.flights;
-          console.log(this.flights);
-        } else {
-          this.flights=[];
-          console.error('Error fetching flights:', response.data);
-        }
-      })
-      .catch(error => {
-        this.flights=[];
-        this.hasSearched =true;
-        console.error('Error fetching flights:', error);
-      });
-    },
-    
-    // Method to handle seat checkout
-    checkoutSeats(flight) {
-      console.log('Checking seats for flight:', flight);
-      this.currentFlight = flight;
-      
-      // Fetch seats for this flight
-      axios.get(`http://127.0.0.1:8080/seats/flight/${flight.id}`)
-        .then(response => {
-          console.log('Seats data:', response.data);
-          this.seats = response.data;
-          this.showSeatModal = true;
-          this.selectedSeat = null;
-        })
-        .catch(error => {
-          console.error('Error fetching seats:', error);
-          alert('Failed to load seat information. Please try again.');
-        });
-    },
-    
-    // Get seat availability
-    getSeatAvailability(row, col) {
-      const seatID = `${row}${col}`;
-      const seat = this.seats.find(s => s.seatID === seatID);
-      return seat ? seat.availability : false;
-    },
-    
-    // Select a seat
-    selectSeat(seatID) {
-      this.selectedSeat = seatID;
-      console.log(`Selected seat: ${seatID}`);
-    },
-    
-    // Confirm seat selection
-    confirmSeatSelection() {
-      if (!this.selectedSeat) return;
-      
-      alert(`You have selected seat ${this.selectedSeat} for your flight from ${this.currentFlight.departure} to ${this.currentFlight.destination}.`);
-      this.showSeatModal = false;
-      
-      // Here you would typically make an API call to reserve the seat
-      // axios.post('http://127.0.0.1:8080/seats/reserve', {
-      //   flightID: this.currentFlight.id,
-      //   seatID: this.selectedSeat
-      // })
-    }
   }
 };
 </script>
 
-<style>
-input[type="date"] {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-}
-
-/* Hide the calendar icon in some browsers */
-input[type="date"]::-webkit-calendar-picker-indicator {
-  opacity: 0;
-  position: absolute;
-  right: 0;
-  top: 0;
+<style scoped>
+.home-container {
   width: 100%;
-  height: 100%;
-  cursor: pointer;
+  overflow-x: hidden;
 }
 
-/* Aircraft styling */
-.airplane-container {
-  position: relative;
-  background-color: #f3f4f6;
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-}
-
-.airplane-nose {
-  position: relative;
-  width: 120px;
-  height: 60px;
-  margin: 0 auto;
-  background-color: #e5e7eb;
-  border-top-left-radius: 60px;
-  border-top-right-radius: 60px;
-  overflow: hidden;
-}
-
-.airplane-nose:before {
-  content: '';
-  position: absolute;
-  top: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40px;
-  height: 40px;
-  background-color: #e5e7eb;
-  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-}
-
-.cockpit-windows {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+/* Hero Section */
+.hero-section {
+  height: 80vh;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
+                    url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2070&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
   display: flex;
-  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 20px;
 }
 
-.window {
-  width: 15px;
-  height: 8px;
-  background-color: #93c5fd;
-  border-radius: 4px;
+.hero-content {
+  max-width: 800px;
+  color: white;
+}
+
+.main-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.cta-button {
+  display: inline-block;
+  background-color: #3b82f6;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+  background-color: #2563eb;
+}
+
+/* Section Styles */
+section {
+  padding: 5rem 2rem;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 3rem;
+  color: #1f2937;
+}
+
+/* Featured Destinations */
+.destinations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.destination-card {
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.destination-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+}
+
+.destination-image {
+  height: 250px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.destination-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  padding: 1.5rem;
+  color: white;
+}
+
+.destination-overlay h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* Features Section */
+.features-section {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), 
+                   url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=2074&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  position: relative;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+}
+
+.feature-icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1.5rem;
+  color: #3b82f6;
+}
+
+.feature-card h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #1f2937;
+}
+
+.feature-card p {
+  color: #6b7280;
+}
+
+/* Testimonials */
+.testimonials-carousel {
+  display: flex;
+  gap: 2rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  overflow-x: auto;
+  padding: 1rem 0;
+  scrollbar-width: none; /* Firefox */
+}
+
+.testimonials-carousel::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+.testimonial-card {
+  flex: 0 0 400px;
+  background-color: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.testimonial-text {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  color: #4b5563;
+  font-style: italic;
+}
+
+.testimonial-author {
+  display: flex;
+  align-items: center;
+}
+
+.author-avatar {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  margin-right: 1rem;
+}
+
+.author-info h4 {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.author-info p {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Newsletter Section */
+.newsletter-section {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                    url('https://images.unsplash.com/photo-1454496522488-7a8e488e8606?q=80&w=2076&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  text-align: center;
+}
+
+.newsletter-content {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.newsletter-content h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.newsletter-content p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.newsletter-form input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem 0 0 0.5rem;
+  border: none;
+  font-size: 1rem;
+}
+
+.newsletter-form button {
+  background-color: #3b82f6;
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0 0.5rem 0.5rem 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.newsletter-form button:hover {
+  background-color: #2563eb;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .main-title {
+    font-size: 2.5rem;
+  }
+  
+  .subtitle {
+    font-size: 1.25rem;
+  }
+  
+  .features-grid, .destinations-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .newsletter-form {
+    flex-direction: column;
+  }
+  
+  .newsletter-form input,
+  .newsletter-form button {
+    border-radius: 0.5rem;
+    width: 100%;
+  }
 }
 </style>
