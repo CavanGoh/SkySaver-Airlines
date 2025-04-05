@@ -4,20 +4,23 @@ import os
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+
+
 
 booking_management = Blueprint('booking_management', __name__)
+
 
 # Service URLs - these would typically be in config.py
 FLIGHT_SERVICE_URL = os.environ.get('FLIGHT_SERVICE_URL', 'http://localhost:5000/flights')
 
-PAYMENT_SERVICE_URL = os.environ.get('PAYMENT_SERVICE_URL', 'http://127.0.0.1:5000/api/payment/flex')
+PAYMENT_SERVICE_URL = os.environ.get('PAYMENT_SERVICE_URL', 'http://127.0.0.1:5005/api/payment/flex')
 
 SEAT_SERVICE_URL = os.environ.get('SEAT_SERVICE_URL', 'http://127.0.0.1:8080/seats')
 
-FLEX_SERVICE_URL = os.environ.get('FLEX_SERVICE_URL', 'http://localhost:5001/flexseat')
+FLEX_SERVICE_URL = os.environ.get('FLEX_SERVICE_URL', 'http://localhost:5003/flexseat')
 
-BOOKING_SERVICE_URL = os.environ.get('BOOKING_SERVICE_URL', 'http://localhost:5000/booking')
+BOOKING_SERVICE_URL = os.environ.get('BOOKING_SERVICE_URL', 'http://localhost:5001/booking')
 
 OUTSYSTEMS_PRICE_URL = 'https://personal-y0j5ezns.outsystemscloud.com/Price/rest/PriceAPI/CalculatePrice'
 
@@ -205,7 +208,8 @@ def confirm_booking():
         }), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.register_blueprint(booking_management)
+    app.run(host='0.0.0.0', port=5090, debug=True)
 
 
 # Additional endpoints will be added for payment processing, seat updates, etc.

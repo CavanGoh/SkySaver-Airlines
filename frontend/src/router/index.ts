@@ -49,6 +49,12 @@ const router = createRouter({
       path: '/register',
       name: 'register',
       component: Register
+    },
+    {
+      path: '/test-booking/:flightId/:seatId',
+      name: 'TestBooking',
+      component: () => import('../views/DiscountedBooking.vue'),
+      props: true
     }
   ]
 });
