@@ -83,33 +83,46 @@ const setupPayPalButton = () => {
       }
     },
     onApprove: async (data, actions) => {
-      currentStep.value = 'confirming';
-      
-      try {
-        // Confirm the booking
-        const confirmResponse = await axios.post('http://localhost:5090/api/booking/confirm', {
-          flight_id: flightId,
-          seat_id: seatId,
-          userId: userId,
-          startDestination: bookingData.value.departure,
-          endDestination: bookingData.value.destination,
-          startDateTime: new Date().toISOString(),
-          endDateTime: new Date().toISOString() // This would be the actual flight time
-        });
-        
-        // Update booking data with confirmation
-        bookingData.value = {
-          ...bookingData.value,
-          confirmation: confirmResponse.data
-        };
-        
-        currentStep.value = 'confirmed';
-      } catch (error) {
-        console.error('Error confirming booking:', error);
-        currentStep.value = 'error';
-        error.value = 'Failed to confirm booking after payment';
-      }
-    },
+  currentStep.value = 'confirming';
+  
+  try {
+    // IMPORTANT: Execute the PayPal payment first
+    console.log("Payment approved with data:", data);
+    
+    // Call your payment service's success endpoint to execute the payment
+    const paymentResult = await axios.get(`http://localhost:5005/api/payment/success?paymentId=${data.paymentID}&PayerID=${data.payerID}`);
+    
+    console.log("Payment execution result:", paymentResult.data);
+    
+    if (paymentResult.data.status !== 'success') {
+      throw new Error('Payment execution failed');
+    }
+    
+    // Now confirm the booking
+    const confirmResponse = await axios.post('http://localhost:5090/api/booking/confirm', {
+      flight_id: flightId,
+      seat_id: seatId,
+      userId: userId,
+      startDestination: bookingData.value.departure,
+      endDestination: bookingData.value.destination,
+      startDateTime: new Date().toISOString(),
+      endDateTime: new Date().toISOString()
+    });
+    
+    // Update booking data with confirmation
+    bookingData.value = {
+      ...bookingData.value,
+      confirmation: confirmResponse.data
+    };
+    
+    currentStep.value = 'confirmed';
+  } catch (error) {
+    console.error('Error processing payment or confirming booking:', error);
+    currentStep.value = 'error';
+    error.value = 'Failed to complete payment or confirm booking';
+  }
+}
+,
     onError: (err) => {
       console.error('PayPal error:', err);
       currentStep.value = 'error';

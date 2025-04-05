@@ -29,7 +29,22 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker # Set the active profile to "docker"
     #   - dbURL=mysql+mysqlconnector://root@host.docker.internal:3306/book # set in example/resources/application.properties
-
+  booking-management:
+    build:
+      context: ./compositeMicroservices/BookingManagement
+      dockerfile: Dockerfile
+    image: edrictan/booking-management:1.0
+    container_name: booking-management
+    ports:
+      - "5090:5090"
+    networks:
+      - flight-network
+    environment:
+      - FLIGHT_SERVICE_URL=http://flight:5000/flights
+      - PAYMENT_SERVICE_URL=http://host.docker.internal:5005/api/payment/flex
+      - SEAT_SERVICE_URL=http://seat:8080/seats
+      - FLEX_SERVICE_URL=http://host.docker.internal:5003/flexseat
+      - BOOKING_SERVICE_URL=http://host.docker.internal:5001/booking
 # Start of Booking microservice...comment out for testing
   # booking:
   #   build:

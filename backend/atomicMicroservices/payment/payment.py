@@ -13,7 +13,8 @@ import os
 app = Flask(__name__)
 
 
-CORS(app)  # Enable CORS for all routes
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+
 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@host.docker.internal:3306/payment_db'
@@ -134,8 +135,8 @@ def create_flex_payment():
         # Create PayPal payment (same process as normal, but typically with discounted amount)
         paypal_payment = create_paypal_payment(
             data['amount'],  # This would be the discounted last-minute price
-            f"{request.host_url}api/payment/success",
-            f"{request.host_url}api/payment/cancel"
+                f"{data.get('base_url', 'http://localhost:5005/')}/api/payment/success",
+                f"{data.get('base_url', 'http://localhost:5005/')}/api/payment/cancel"
         )
 
         # Create payment record in database

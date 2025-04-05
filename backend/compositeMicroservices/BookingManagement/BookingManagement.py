@@ -12,16 +12,22 @@ booking_management = Blueprint('booking_management', __name__)
 
 
 # Service URLs - these would typically be in config.py
-FLIGHT_SERVICE_URL = os.environ.get('FLIGHT_SERVICE_URL', 'http://localhost:5000/flights')
+# Flight service is containerized, use container name
+FLIGHT_SERVICE_URL = os.environ.get('FLIGHT_SERVICE_URL', 'http://flight:5000/flights')
 
-PAYMENT_SERVICE_URL = os.environ.get('PAYMENT_SERVICE_URL', 'http://127.0.0.1:5005/api/payment/flex')
+# Payment service is not containerized, use host.docker.internal
+PAYMENT_SERVICE_URL = os.environ.get('PAYMENT_SERVICE_URL', 'http://host.docker.internal:5005/api/payment/flex')
 
-SEAT_SERVICE_URL = os.environ.get('SEAT_SERVICE_URL', 'http://127.0.0.1:8080/seats')
+# Seat service is containerized, use container name
+SEAT_SERVICE_URL = os.environ.get('SEAT_SERVICE_URL', 'http://seat:8080/seats')
 
-FLEX_SERVICE_URL = os.environ.get('FLEX_SERVICE_URL', 'http://localhost:5003/flexseat')
+# FlexSeat service is not containerized, use host.docker.internal
+FLEX_SERVICE_URL = os.environ.get('FLEX_SERVICE_URL', 'http://host.docker.internal:5003/flexseat')
 
-BOOKING_SERVICE_URL = os.environ.get('BOOKING_SERVICE_URL', 'http://localhost:5001/booking')
+# Booking service is not containerized, use host.docker.internal
+BOOKING_SERVICE_URL = os.environ.get('BOOKING_SERVICE_URL', 'http://host.docker.internal:5001/booking')
 
+# External service, keep the full URL
 OUTSYSTEMS_PRICE_URL = 'https://personal-y0j5ezns.outsystemscloud.com/Price/rest/PriceAPI/CalculatePrice'
 
 
@@ -112,15 +118,16 @@ def update_seat_availability(flight_id, seat_id, availability):
     Update the availability of a seat in the seat service.
     """
     url = f"{SEAT_SERVICE_URL}/{flight_id}/{seat_id}/availability"
-    params = {"availability": availability}
     
     try:
-        response = requests.put(url, params=params)
+        # Send availability in the request body as JSON, not as a query parameter
+        response = requests.put(url, json={"availability": availability})
         response.raise_for_status()
         return True
     except requests.RequestException as e:
         print(f"Error updating seat availability: {str(e)}")
         return False
+
 
 @booking_management.route('/api/booking/confirm', methods=['POST'])
 def confirm_booking():
