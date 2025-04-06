@@ -135,11 +135,12 @@ export default {
 
 <template>
 
-    <div class="booking-page">
+  <div class="booking-page">
     <div class="booking-header">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 class="text-4xl font-bold text-white mb-4">Book Your Flight</h1>
-        <p class="text-white text-lg max-w-2xl">Search for flights to destinations around the world and book your next adventure with SkySaver Airlines.</p>
+        <p class="text-white text-lg max-w-2xl">Search for flights to destinations around the world and book your next
+          adventure with SkySaver Airlines.</p>
       </div>
     </div>
 
@@ -198,66 +199,6 @@ export default {
       </form>
     </div>
 
-    <!-- Travel Inspiration Section -->
-    <div class="mb-8 mt-12">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Explore Popular Destinations</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Destination Card 1 -->
-        <div class="bg-white rounded-lg overflow-hidden shadow-md transition-transform hover:shadow-lg hover:-translate-y-1">
-          <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" 
-               alt="New York skyline" 
-               class="w-full h-48 object-cover">
-          <div class="p-4">
-            <h3 class="text-lg font-bold text-gray-900">New York</h3>
-            <p class="text-gray-600 text-sm">Experience the vibrant city that never sleeps with iconic landmarks and world-class entertainment.</p>
-            <p class="mt-2 text-blue-600 font-medium">Flights from $299</p>
-          </div>
-        </div>
-        
-        <!-- Destination Card 2 -->
-        <div class="bg-white rounded-lg overflow-hidden shadow-md transition-transform hover:shadow-lg hover:-translate-y-1">
-          <img src="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" 
-               alt="London landmarks" 
-               class="w-full h-48 object-cover">
-          <div class="p-4">
-            <h3 class="text-lg font-bold text-gray-900">London</h3>
-            <p class="text-gray-600 text-sm">Discover the perfect blend of history and modernity in one of the world's most visited cities.</p>
-            <p class="mt-2 text-blue-600 font-medium">Flights from $350</p>
-          </div>
-        </div>
-        
-        <!-- Destination Card 3 -->
-        <div class="bg-white rounded-lg overflow-hidden shadow-md transition-transform hover:shadow-lg hover:-translate-y-1">
-          <img src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" 
-               alt="Tokyo cityscape" 
-               class="w-full h-48 object-cover">
-          <div class="p-4">
-            <h3 class="text-lg font-bold text-gray-900">Tokyo</h3>
-            <p class="text-gray-600 text-sm">Immerse yourself in Japan's captivating blend of ultramodern and traditional culture.</p>
-            <p class="mt-2 text-blue-600 font-medium">Flights from $450</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Promotional Banner -->
-    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg shadow-lg mb-8 overflow-hidden">
-      <div class="md:flex items-center">
-        <div class="p-6 md:w-2/3">
-          <h3 class="text-xl md:text-2xl font-bold text-white mb-2">Summer Special: 15% Off All International Flights</h3>
-          <p class="text-blue-100 mb-4">Book by June 30th for travel between July and September. Use promo code SUMMER23.</p>
-          <button class="bg-white text-blue-600 px-6 py-2 rounded font-medium hover:bg-blue-50 transition-colors">
-            Learn More
-          </button>
-        </div>
-        <div class="md:w-1/3 p-6 hidden md:block">
-          <img src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" 
-               alt="Airplane wing view" 
-               class="rounded-lg shadow">
-        </div>
-      </div>
-    </div>
-
     <!-- Search Results -->
     <div v-if="searchResults.length > 0" class="mt-8">
       <h2 class="text-2xl font-bold text-gray-900 mb-6">Available Flights</h2>
@@ -310,7 +251,7 @@ export default {
               <span class="text-gray-600 text-sm">Price per passenger</span>
               <span class="text-xl font-bold text-blue-700">${{ flight.price }}</span>
             </div>
-            <button @click="flightId=flight.id;checkoutSeats(flight)"
+            <button @click="flightId = flight.id; checkoutSeats(flight)"
               class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition-colors">
               Select
             </button>
@@ -318,6 +259,76 @@ export default {
         </div>
       </div>
     </div>
+
+    <!-- Travel Inspiration Section -->
+    <div class="mb-8 mt-12">
+      <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Explore Popular Destinations</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Destination Card 1 -->
+        <div
+          class="bg-white rounded-lg overflow-hidden shadow-md transition-transform hover:shadow-lg hover:-translate-y-1">
+          <img
+            src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80"
+            alt="New York skyline" class="w-full h-48 object-cover">
+          <div class="p-4">
+            <h3 class="text-lg font-bold text-gray-900">New York</h3>
+            <p class="text-gray-600 text-sm">Experience the vibrant city that never sleeps with iconic landmarks and
+              world-class entertainment.</p>
+            <p class="mt-2 text-blue-600 font-medium">Flights from $299</p>
+          </div>
+        </div>
+
+        <!-- Destination Card 2 -->
+        <div
+          class="bg-white rounded-lg overflow-hidden shadow-md transition-transform hover:shadow-lg hover:-translate-y-1">
+          <img
+            src="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80"
+            alt="London landmarks" class="w-full h-48 object-cover">
+          <div class="p-4">
+            <h3 class="text-lg font-bold text-gray-900">London</h3>
+            <p class="text-gray-600 text-sm">Discover the perfect blend of history and modernity in one of the world's
+              most visited cities.</p>
+            <p class="mt-2 text-blue-600 font-medium">Flights from $350</p>
+          </div>
+        </div>
+
+        <!-- Destination Card 3 -->
+        <div
+          class="bg-white rounded-lg overflow-hidden shadow-md transition-transform hover:shadow-lg hover:-translate-y-1">
+          <img
+            src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80"
+            alt="Tokyo cityscape" class="w-full h-48 object-cover">
+          <div class="p-4">
+            <h3 class="text-lg font-bold text-gray-900">Tokyo</h3>
+            <p class="text-gray-600 text-sm">Immerse yourself in Japan's captivating blend of ultramodern and
+              traditional culture.</p>
+            <p class="mt-2 text-blue-600 font-medium">Flights from $450</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Promotional Banner -->
+    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg shadow-lg mb-8 overflow-hidden">
+      <div class="md:flex items-center">
+        <div class="p-6 md:w-2/3">
+          <h3 class="text-xl md:text-2xl font-bold text-white mb-2">Summer Special: 15% Off All International Flights
+          </h3>
+          <p class="text-blue-100 mb-4">Book by June 30th for travel between July and September. Use promo code
+            SUMMER23.</p>
+          <button class="bg-white text-blue-600 px-6 py-2 rounded font-medium hover:bg-blue-50 transition-colors">
+            Learn More
+          </button>
+        </div>
+        <div class="md:w-1/3 p-6 hidden md:block">
+          <img
+            src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80"
+            alt="Airplane wing view" class="rounded-lg shadow">
+        </div>
+      </div>
+    </div>
+
+
 
     <!-- Seat Selection Modal -->
     <div v-if="showSeatModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
