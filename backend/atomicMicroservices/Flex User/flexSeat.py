@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from datetime import datetime
+from datetime import datetime,timezone
 
 
 app = Flask(__name__)
@@ -158,12 +158,15 @@ def create_flexseat():
 def delete_flexseat():
     try:
         data = request.get_json()
+        start_date = datetime.fromisoformat(data['startDateTime'].replace('Z', '+00:00')).replace(tzinfo=timezone.utc)
+        end_date = datetime.fromisoformat(data['endDateTime'].replace('Z', '+00:00')).replace(tzinfo=timezone.utc)
+        
         record = FlexSeat.query.filter_by(
             userId=data['userId'],
             startDestination=data['startDestination'],
             endDestination=data['endDestination'],
-            startDateTime=datetime.strptime(data['startDateTime'], '%Y-%m-%d %H:%M:%S'),
-            endDateTime=datetime.strptime(data['endDateTime'], '%Y-%m-%d %H:%M:%S')
+            startDateTime=start_date,
+            endDateTime=end_date
         ).first()
 
         if not record:
@@ -182,6 +185,7 @@ def delete_flexseat():
         })
     except Exception as e:
         db.session.rollback()
+        print(f"Error in delete_flexseat: {str(e)}")  # Add this line for debugging
         return jsonify({
             "code": 500,
             "message": f"An error occurred: {str(e)}"
