@@ -103,5 +103,24 @@ def get_filtered_flights():
         print(f"An error occurred: {str(e)}")
         return jsonify({"code": 500, "message": f"An error occurred: {str(e)}"}), 500
 
+@app.route("/flight/<string:flight_id>", methods=['GET'])
+def get_flight_by_id(flight_id):
+    try:
+        flights = ref.get()
+
+        # Handle list format
+        if isinstance(flights, list):
+            for flight in flights:
+                if flight and flight.get("id") == int(flight_id):
+                    return jsonify({"code": 200, "data": flight})
+        else:
+            return jsonify({"code": 500, "message": "Unexpected data structure in Firebase."}), 500
+
+        return jsonify({"code": 404, "message": f"No flight found with id '{flight_id}'"}), 404
+
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return jsonify({"code": 500, "message": f"An error occurred: {str(e)}"}), 500
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

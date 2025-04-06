@@ -101,7 +101,7 @@ services:
   # Postgres: The database used by Kong
   #######################################
   kong-database:
-    image: postgres:17.4
+    image: postgres:9.6
     platform: linux/amd64  # <- required for Mac M1 chip. Otherwise, can remove
     restart: always
     networks:
@@ -164,5 +164,40 @@ services:
       - "8000:8000" # Takes incoming HTTP traffic from Consumers, and forwards it to upstream Services.
       - "8001:8001" # Admin API. Listens for calls from the command line over HTTP.
       - "8002:8002" # Kong Manager (GUI). Listens for HTTP traffic.
+
+  #######################################
+  # Konga: Kong GUI
+  #######################################
+  konga:
+    image: pantsel/konga
+    container_name: konga
+    restart: always
+    networks:
+      - kong-net
+    environment:
+      # NODE_ENV: development
+      DB_ADAPTER: postgres
+      DB_HOST: kong-database
+      DB_PORT: 5432
+      DB_USER: kong
+      DB_PASSWORD: password
+      DB_DATABASE: konga_db
+    ports:
+      - "1338:1337"
+    depends_on:
+      - kong
+      - wait-for-db
+    # entrypoint:
+    #   - /bin/sh
+    #   - -c
+    #   - "sleep 5 && npm start"
+
+  wait-for-db:
+    image: busybox
+    depends_on:
+      - kong-database
+    command: sh -c "until nc -z kong-database 5432; do echo waiting for db...; sleep 2; done;"
+    networks:
+      - kong-net
 
 
