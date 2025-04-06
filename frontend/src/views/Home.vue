@@ -32,8 +32,8 @@
           <div class="feature-icon" v-html="feature.icon"></div>
           <h3>{{ feature.title }}</h3>
           <p>{{ feature.description }}</p>
-        </div>
-      </div>
+            </div>
+          </div>
     </section>
 
     <!-- Testimonials -->
@@ -50,9 +50,9 @@
                 <p>{{ testimonial.location }}</p>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+                </div>
+              </div>
+            </div>
     </section>
 
     <!-- Newsletter -->
