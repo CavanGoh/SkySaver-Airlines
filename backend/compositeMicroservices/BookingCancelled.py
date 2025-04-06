@@ -10,24 +10,18 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 
-# URLs for microservices
-# booking_URL = "http://localhost:5000/booking"
-# flexSeat_URL = "http://localhost:5001/flexseat"
 
 booking_URL = "http://localhost:5001/booking"
-flexSeat_URL = "http://localhost:5003/flexseat"
-seat_URL="http://localhost:8080/seats/flight"
+seat_URL="http://localhost:8080/seats"
 
 amqp_host = "localhost"
 amqp_port = 5672
-exchange_name = "notification_direct"
+exchange_name = "notify_direct"
 exchange_type = "direct"
-routing_key = "notification"
+routing_key = "notify"
 
 def publish_message(message):
-
     try:
-
         connection = pika.BlockingConnection(
             pika.ConnectionParameters(
                 host=amqp_host,
@@ -37,15 +31,15 @@ def publish_message(message):
             )
         )
         
-
         channel = connection.channel()
         
+        # Declare the exchange
         channel.exchange_declare(
             exchange=exchange_name, 
             exchange_type=exchange_type, 
             durable=True
         )
-        
+                
         # Publish the message
         channel.basic_publish(
             exchange=exchange_name,
@@ -58,8 +52,6 @@ def publish_message(message):
         )
         
         print(f"Published message to RabbitMQ: {message}")
-        
-
         connection.close()
         return True
         
@@ -73,52 +65,49 @@ def publish_message(message):
 def cancel_booking():
     details = request.get_json()
     booking_id = details.get('booking_id')
+    flight_id = details.get('flight_id')
+    seat_id = details.get('seat_id')
     
-    response = requests.put(booking_URL + "/cancel/" + str(booking_id))
-    
-    if response.status_code == 200:
-        #hardcode until flight is ready
-        departure = "New York"
-        destination = "London"
-        departureDate = "2025-04-15"
-        flex_url = f"{flexSeat_URL}/match"
-        print(f"Calling FlexSeat API at: {flex_url}")
-            
-            # Make request to FlexSeat service
-        flex_response = requests.get(
-            flex_url, 
-            params={
-                "departure": departure,
-                "destination": destination,
-                "departureDate": departureDate
-            }
+    booking_response = requests.put(booking_URL + "/cancel/" + str(booking_id))
+    if booking_response.status_code == 200:
+        seat_response = requests.put(
+            seat_URL + "/" + flight_id + "/" + seat_id + "/availability",
+            json={"availability": True}
         )
-        if flex_response.status_code == 200:
-            flex_data = flex_response.json().get("data", {})
-            print("FlexSeat match data:", flex_data)
-        
-        notification_message = {
-            "event_type": "booking_cancelled",
-            "booking_id": booking_id,
-            "timestamp": datetime.now().isoformat(),
-            "details": {
-            "message": f"Booking #{booking_id} has been cancelled",
-            "status": "cancelled"
-            }
-        }
+        if seat_response.status_code == 200:
+            print("Seat updated", seat_response.status_code)
             
-
-        publish_result = publish_message(notification_message)
+            message = {
+                "event_type": "booking_cancelled",
+                "flight": flight_id,
+                "seat": seat_id,
+                "timestamp": datetime.now().isoformat(),
+                "details": {
+                "message": f"Flight #{flight_id} has cancellation",
+                "status": "cancelled"
+                }
+            }
+            
+            publish_result = publish_message(message)
         
+            return jsonify({
+                "code": 200,
+                "message": "Booking cancelled successfully",
+                "data": booking_response.json().get("data"),
+                "notification_sent": publish_result
+            }), 200
+        else:
+            # Add a return for seat service failure
+            return jsonify({
+                "code": seat_response.status_code,
+                "message": "Failed to update seat availability"
+            }), 500
+            
+    return jsonify({
+        "code": booking_response.status_code,
+        "message": "Failed to cancel booking"
+    }), booking_response.status_code
 
-        return jsonify({
-            "code": 200,
-            "message": "Booking cancelled successfully",
-            "data": response.json().get("data"),
-            "notification_sent": publish_result
-        }), 200
-    else:
-        return jsonify(response.json()), response.status_code
     
 # def processCancelBooking(booking):
 #     #  Invoke other microservices: seat service to update seat to available
