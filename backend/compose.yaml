@@ -59,12 +59,13 @@ services:
       - "5090:5090"
     networks:
       - flight-network
+      - kong-net
     environment:
       - FLIGHT_SERVICE_URL=http://flight:5000/flights
       - PAYMENT_SERVICE_URL=http://host.docker.internal:5005/api/payment/flex
       - SEAT_SERVICE_URL=http://seat:8080/seats
       - FLEX_SERVICE_URL=http://host.docker.internal:5003/flexseat
-      - BOOKING_SERVICE_URL=http://host.docker.internal:5001/booking
+      - BOOKING_SERVICE_URL=http://booking:5001/booking
 # Start of Booking microservice...comment out for testing
   booking:
     build:

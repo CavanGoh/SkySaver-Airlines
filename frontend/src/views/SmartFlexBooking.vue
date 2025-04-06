@@ -58,13 +58,12 @@ const submitFlexBooking = async () => {
     console.log('Submitting flex booking:', flexBooking.value);
     
     try {
-      const response = await axios.post('http://localhost:5000/booking/flex', {
-        user_id: 1,
-        departure: flexBooking.value.departure,
-        destination: flexBooking.value.destination,
-        start_date: flexBooking.value.startDate,
-        end_date: flexBooking.value.endDate,
-        passengers: flexBooking.value.passengers
+      const response = await axios.post('http://localhost:5003/flexseat/new', {
+        userId: 1,  // Update this value as per your application’s data
+        startDestination: flexBooking.value.departure,
+        endDestination: flexBooking.value.destination,
+        startDateTime: flexBooking.value.startDate,
+        endDateTime: flexBooking.value.endDate,
       });
       
       console.log('Flex booking created:', response.data);

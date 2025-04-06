@@ -1,143 +1,142 @@
-import os, sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from wrapperServices.invokes import invoke_http
-
 from flask import Flask, request, jsonify
+import requests
 from flask_cors import CORS
-import json
-import pika
+
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
-# Microservice URLs
-flight_URL = "http://localhost:5000/flights"    
-flexseat_URL = "http://localhost:5003/flexseat"
 
-# RabbitMQ setup
-RABBITMQ_HOST = "localhost"
-RABBITMQ_PORT = 5672
-EXCHANGE_NAME = "notification_direct"
-ROUTING_KEY = "notification"
 
-@app.route("/notify_flex_user", methods=["POST"])
-def notify_flex_user():
-    if request.is_json:
+FLIGHT_SERVICE_URL = "http://localhost:5000"
+FLEXSEAT_SERVICE_URL = "http://localhost:5003"
+NOTIFICATION_SERVICE_URL = "http://localhost:5021"
+
+@app.route('/notify-flex-users', methods=['POST'])
+def notify_flex_users():
+    try:
+        
+        data = request.get_json()
+        if not data or 'flight_id' not in data:
+            return jsonify({"error": "Missing flight_id in request"}), 400
+            
+        flight_id = data['flight_id']
+
+        
+      
         try:
-            data = request.get_json()
-            print("\nReceived cancellation event:", data)
-
-            cancelled_flight_id = data.get("flight_id")
-            cancelled_date = data.get("date")  
-
-            if not cancelled_flight_id or not cancelled_date:
-                return jsonify({
-                    "code": 400,
-                    "message": "Missing required fields: flight_id or date"
-                }), 400
-
-            # Step 1: Get flight details
-            print("\n----- Retrieving flight details -----")
-            try:
-                flight_result = invoke_http(f"{flight_URL}/{cancelled_flight_id}", method="GET")
-                print("Flight result:", flight_result)
-            except Exception as e:
-                return jsonify({
-                    "code": 500,
-                    "message": f"Invalid response from flight service: {str(e)}"
-                }), 500
-
-            if not isinstance(flight_result, dict) or flight_result.get("code") != 200:
-                return jsonify({
-                    "code": 404,
-                    "message": "Flight not found or error retrieving flight data",
-                    "data": flight_result
-                }), 404
-
-            flight_data = flight_result["data"]
-
-            # Step 2: Query flex users with matching destination and departureDate
-            print("\n----- Retrieving matching flex users -----")
-            query = {
-                "destination": flight_data["destination"],
-                "departureDate": cancelled_date  # Matches field name from flight DB
-            }
-
-            try:
-                flex_result = invoke_http(flexseat_URL, method="POST", json=query)
-                print("Flex user match result:", flex_result)
-            except Exception as e:
-                return jsonify({
-                    "code": 500,
-                    "message": f"Invalid response from flexseat service: {str(e)}"
-                }), 500
-
-            if not isinstance(flex_result, dict) or flex_result.get("code") != 200 or not flex_result.get("data"):
-                return jsonify({
-                    "code": 200,
-                    "message": "No matching flex users found for this cancellation.",
-                    "data": []
-                }), 200
-
-            matched_users = flex_result["data"]
-
-            # Step 3: Publish notifications to RabbitMQ
-            print("\n----- Sending notifications via RabbitMQ -----")
-            publish_to_queue({
-                "type": "flight_cancellation",
-                "flight": flight_data,
-                "date": cancelled_date,
-                "users": matched_users
-            })
-
-            return jsonify({
-                "code": 200,
-                "message": f"Notified {len(matched_users)} flex user(s)",
-                "data": matched_users
-            }), 200
-
+            
+            flight_response = requests.get(f"{FLIGHT_SERVICE_URL}/flights")
+            
+            if flight_response.status_code != 200:
+               
+                return jsonify({"error": "Failed to fetch flights"}), 500
+                
+            flight_data = flight_response.json()
+            
+            if 'data' not in flight_data or 'flights' not in flight_data['data']:
+               
+                return jsonify({"error": "Unexpected flight service response format"}), 500
+                
+            
+            flights = flight_data['data']['flights']
+            
+           
+            if isinstance(flights, dict):
+                flights = list(flights.values())
+          
+            flight_details = None
+            for flight in flights:
+                if str(flight.get('id')) == str(flight_id):
+                    flight_details = flight
+                    break
+                    
+            if not flight_details:
+                
+                return jsonify({"error": f"Flight with ID {flight_id} not found"}), 404
+                
+            
+            
         except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            err_msg = f"{str(e)} at {exc_type}: {fname}: line {exc_tb.tb_lineno}"
-            print("Error:", err_msg)
-
+            
+            return jsonify({"error": f"Failed to fetch flight details: {str(e)}"}), 500
+        
+        
+        try:
+            flex_response = requests.get(
+                f"{FLEXSEAT_SERVICE_URL}/flexseat/match",
+                params={
+                    "departure": flight_details['departure'],
+                    "destination": flight_details['destination'],
+                    "departureDate": flight_details['departureDate'],
+                    "departureTime": flight_details.get('departureTime', '00:00:00')
+                }
+            )
+           
+            
+            if flex_response.status_code != 200:
+                return jsonify({
+                    "error": f"Failed to fetch matching flex users. Status: {flex_response.status_code}",
+                    "details": flex_response.text
+                }), 500
+                
+            flex_data = flex_response.json()
+            matching_users = flex_data.get('data', {}).get('userIds', [])
+            
+            if not matching_users:
+                return jsonify({
+                    "message": "No matching flex users found for this flight",
+                    "users_notified": 0
+                }), 200
+                
+            
+            
+        except Exception as e:
+            
+            return jsonify({"error": f"Failed to connect to flexseat service: {str(e)}"}), 500
+        
+        # Send notifications to matching users
+        try:
+            notification_data = {
+                "users": matching_users,
+                "flight_details": flight_details
+            }
+            
+            notify_response = requests.post(
+                f"{NOTIFICATION_SERVICE_URL}/send-notifications", 
+                json=notification_data
+            )
+            
+            
+            
+            if notify_response.status_code != 200:
+                return jsonify({
+                    "error": f"Failed to send notifications. Status: {notify_response.status_code}",
+                    "details": notify_response.text
+                }), 500
+                
             return jsonify({
-                "code": 500,
-                "message": "Internal server error: " + err_msg
-            }), 500
+                "message": "Notifications sent successfully",
+                "users_notified": len(matching_users),
+                "users": matching_users
+            }), 200
+            
+        except Exception as e:
+           
+            return jsonify({"error": f"Failed to connect to notification service: {str(e)}"}), 500
+            
+    except Exception as e:
+        
+        import traceback
+       
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
-    return jsonify({
-        "code": 400,
-        "message": "Request must be in JSON format"
-    }), 400
-
-
-def publish_to_queue(message):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(
-        host=RABBITMQ_HOST,
-        port=RABBITMQ_PORT,
-        heartbeat=300,
-        blocked_connection_timeout=300
-    ))
-
-    channel = connection.channel()
-    channel.exchange_declare(exchange=EXCHANGE_NAME, exchange_type="direct", durable=True)
-
-    channel.basic_publish(
-        exchange=EXCHANGE_NAME,
-        routing_key=ROUTING_KEY,
-        body=json.dumps(message),
-        properties=pika.BasicProperties(delivery_mode=2)  # Make message persistent
-    )
-
-    print("Published message to RabbitMQ.")
-    connection.close()
+if __name__ == '__main__':
+    
+    app.run(host='0.0.0.0', port=5020, debug=True)
 
 
-if __name__ == "__main__":
-    print("This is flask " + os.path.basename(__file__) + " for notifying flex users...")
-    app.run(host="0.0.0.0", port=5200, debug=True)
+
 
 
 

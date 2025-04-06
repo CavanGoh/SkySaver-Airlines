@@ -25,7 +25,7 @@ SEAT_SERVICE_URL = os.environ.get('SEAT_SERVICE_URL', 'http://seat:8080/seats')
 FLEX_SERVICE_URL = os.environ.get('FLEX_SERVICE_URL', 'http://host.docker.internal:5003/flexseat')
 
 # Booking service is not containerized, use host.docker.internal
-BOOKING_SERVICE_URL = os.environ.get('BOOKING_SERVICE_URL', 'http://host.docker.internal:5001/booking')
+BOOKING_SERVICE_URL = os.environ.get('BOOKING_SERVICE_URL',  "http://booking:5001/booking")
 
 # External service, keep the full URL
 OUTSYSTEMS_PRICE_URL = 'https://personal-y0j5ezns.outsystemscloud.com/Price/rest/PriceAPI/CalculatePrice'
@@ -169,11 +169,15 @@ def confirm_booking():
         try:
             booking_request = {
                 'user_id': data['userId'],  # Use userId from the request
-                'flight_id': data['flight_id']
+                'flight_id': data['flight_id'],
+                'seat_id': data['seat_id']
             }
             
             booking_response = requests.post(f"{BOOKING_SERVICE_URL}/new", json=booking_request)
-            
+
+            print(f"BOOKING_SERVICE_URL: {BOOKING_SERVICE_URL}")
+            print(f"Booking request URL: {BOOKING_SERVICE_URL}")
+            print(f"Booking request data: {booking_request}")
             if booking_response.status_code in [201, 409]:  # Success or already exists
                 booking_created = True
                 booking_data = booking_response.json().get('data', {})
