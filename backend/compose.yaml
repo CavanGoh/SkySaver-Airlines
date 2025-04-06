@@ -2,7 +2,27 @@ networks:
   flight-network:
     driver: bridge
     name: flight-network
+  kong-net:
+    driver: bridge
+
+volumes:
+  pgdata:
+    name: esd_pgdata 
+
 services:
+  user:
+    build:
+      context: ./atomicMicroservices/user
+      dockerfile: Dockerfile
+    image: edrictan/user:1.0
+    container_name: user
+    ports:
+      - "5500:5500" 
+    env_file: #env_file directive automatically loads the environment variables from the .env
+      - .env # This loads the variables from .env file
+    networks:
+      - kong-net
+
   flight:
     build:
       context: ./atomicMicroservices/flightService
@@ -14,7 +34,7 @@ services:
     env_file: #env_file directive automatically loads the environment variables from the .env
       - .env # This loads the variables from .env file
     networks:
-      - flight-network
+      - kong-net
 
   seat:
     build:
@@ -25,7 +45,7 @@ services:
     ports:
       - "8080:8080" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports
     networks:
-      - flight-network
+      - kong-net
     environment:
       - SPRING_PROFILES_ACTIVE=docker # Set the active profile to "docker"
     #   - dbURL=mysql+mysqlconnector://root@host.docker.internal:3306/book # set in example/resources/application.properties
@@ -46,30 +66,103 @@ services:
       - FLEX_SERVICE_URL=http://host.docker.internal:5003/flexseat
       - BOOKING_SERVICE_URL=http://host.docker.internal:5001/booking
 # Start of Booking microservice...comment out for testing
-  # booking:
-  #   build:
-  #     context: ./atomicMicroservices/booking
-  #     dockerfile: Dockerfile
-  #   image: edrictan/booking:1.0
-  #   container_name: booking
-  #   ports:
-  #     - "5001:5001" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports
-  #   networks:
-  #   - flight-network
+  booking:
+    build:
+      context: ./atomicMicroservices/booking
+      dockerfile: Dockerfile
+    image: edrictan/booking:1.0
+    container_name: booking
+    ports:
+      - "5001:5001" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports
+    networks:
+    - kong-net
     # environment:
       # - dbURL=mysql+mysqlconnector://root@host.docker.internal:3306/book # set in example/resources/application.properties
-  # book-flight:
-  #   build:
-  #     context: ./compositeMicroservices
-  #     dockerfile: BookFlight/Dockerfile
-  #   image: edrictan/book-flight:1.0
-  #   container_name: book-flight
-  #   ports:
-  #     - "5002:5002" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports
-  #   networks:
-  #     - flight-network
-    # environment:
-    #   - dbURL=mysql+mysqlconnector://root@host.docker.internal:3306/book # set in example/resources/application.properties
 
+  #######################################
+  # Composite Microservices: To spin them up
+  #######################################
+  book-flight:
+    build:
+      context: ./compositeMicroservices
+      dockerfile: BookFlight/Dockerfile
+    image: edrictan/book-flight:1.0
+    container_name: book-flight
+    ports:
+      - "5002:5002" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports
+    networks:
+      - kong-net
+    depends_on:
+      - booking
+      - seat
+
+
+  #######################################
+  # Postgres: The database used by Kong
+  #######################################
+  kong-database:
+    image: postgres:17.4
+    platform: linux/amd64  # <- required for Mac M1 chip. Otherwise, can remove
+    restart: always
+    networks:
+      - kong-net
+    environment:
+      POSTGRES_DB: kong
+      POSTGRES_USER: kong
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "kong"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  #######################################
+  # Kong database migration
+  #######################################
+  kong-migration:
+    image: kong/kong-gateway:3.9
+    platform: linux/amd64  # <- required for Mac M1 chip. Otherwise, can remove
+    command: "kong migrations bootstrap"
+    restart: on-failure
+    networks:
+      - kong-net
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: password
+    depends_on:
+      - kong-database
+
+  #######################################
+  # Kong: The API Gateway
+  #######################################
+  kong:
+    image: kong/kong-gateway:3.9
+    platform: linux/amd64  # <- required for Mac M1 chip. Otherwise, can remove
+    restart: always
+    networks:
+      - kong-net
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: password
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_ADMIN_GUI_URL: http://localhost:8002
+    depends_on:
+      - kong-migration
+    ports: # https://docs.konghq.com/gateway/latest/production/networking/default-ports/
+      - "8000:8000" # Takes incoming HTTP traffic from Consumers, and forwards it to upstream Services.
+      - "8001:8001" # Admin API. Listens for calls from the command line over HTTP.
+      - "8002:8002" # Kong Manager (GUI). Listens for HTTP traffic.
 
 

@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
+# from flask_cors import CORS
 import requests
 
 import os,sys
@@ -8,12 +8,13 @@ from wrapperServices.invokes import invoke_http
 
 
 app = Flask(__name__)
-# CORS(app)
-CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+# KONG now handles the CORS, so microservice itself dont need worry about CORS
+# Makes handling CORS more centralised: done via  KONG 
+# CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 
-booking_URL = "http://localhost:5001/booking/new"
-seat_URL="http://localhost:8080/seats"
+booking_URL = "http://booking:5001/booking/new"
+seat_URL="http://seat:8080/seats"
 @app.route("/book_flight", methods=['POST'])
 def book_flight():
     if request.is_json:

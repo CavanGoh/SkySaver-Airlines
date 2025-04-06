@@ -17,3 +17,5 @@ CREATE TABLE IF NOT EXISTS `users` (
   INDEX `email_index` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+INSERT INTO users (email, password) VALUES
+('tanedric@gmail.com','123')

@@ -1,133 +1,4 @@
 <script>
-// import { ref } from 'vue';
-// import { useRouter } from 'vue-router';
-// import SmartFlexBooking from './SmartFlexBooking.vue';
-// const bookingType = ref('standard');
-// const router = useRouter();
-// import axios from 'axios';
-
-// const showSeatModal=false;
-// const flightSearch = ref({
-//   departure: '',
-//   destination: '',
-//   date: '',
-//   endDate: '',
-//   passengers: 1
-// });
-
-// const searchResults = ref<Array<{
-//   id: string;
-//   airline: string;
-//   departure: string;
-//   destination: string;
-//   departureTime: string;
-//   arrivalTime: string;
-//   duration: string;
-//   price: number;
-//   aircraft: string;
-//   seatsAvailable: number;
-// }>>([]);
-// const isLoading = ref(false);
-
-// const searchFlights = async () => {
-//   isLoading.value = true;
-
-//   // Simulate API delay
-//   await new Promise(resolve => setTimeout(resolve, 1000));
-
-//   const formatDate = (date) => {
-//     const d = new Date(date);
-//     const day = String(d.getDate()).padStart(2, '0');
-//     const month = String(d.getMonth() + 1).padStart(2, '0'); // Month is 0-based
-//     const year = d.getFullYear();
-//     return `${day}-${month}-${year}`;
-//   };
-//   const dateFromFormatted = formatDate(flightSearch.value.date);
-//   axios.get('http://127.0.0.1:5000/flights', {
-//     params: {
-//       departure: flightSearch.value.departure,
-//       destination: flightSearch.value.destination,
-//       dateFrom: dateFromFormatted, // Send in DD-MM-YYYY format
-//       dateTo: dateFromFormatted // Send in DD-MM-YYYY format
-//     }
-//   })
-//     .then(response => {
-//       // this.hasSearched =true;
-
-//       if (response.data.code === 200) {
-//         console.log(response);
-//         searchResults.value = response.data.data.flights;
-//         // console.log(this.flights);
-//       } else {
-//         // this.flights=[];
-//         // console.error('Error fetching flights:', response.data);
-//       }
-//     })
-//     .catch(error => {
-//       // this.flights=[];
-//       // this.hasSearched =true;
-//       console.error('Error fetching flights:', error);
-//     });
-
-//   // Hardcoded flight results
-//   // searchResults.value = [
-//   //   {
-//   //     id: '1234',
-//   //     airline: 'SkySaver Airways',
-//   //     departure: flightSearch.value.departure || 'London',
-//   //     destination: flightSearch.value.destination || 'New York',
-//   //     departureTime: '08:30',
-//   //     arrivalTime: '11:45',
-//   //     duration: '3h 15m',
-//   //     price: 299.99,
-//   //     aircraft: 'Boeing 737-800',
-//   //     seatsAvailable: 24
-//   //   },
-//   //   {
-//   //     id: '2345',
-//   //     airline: 'SkySaver Airways',
-//   //     departure: flightSearch.value.departure || 'London',
-//   //     destination: flightSearch.value.destination || 'New York',
-//   //     departureTime: '12:15',
-//   //     arrivalTime: '15:30',
-//   //     duration: '3h 15m',
-//   //     price: 349.99,
-//   //     aircraft: 'Airbus A320',
-//   //     seatsAvailable: 16
-//   //   },
-//   //   {
-//   //     id: '3456',
-//   //     airline: 'SkySaver Airways',
-//   //     departure: flightSearch.value.departure || 'London',
-//   //     destination: flightSearch.value.destination || 'New York',
-//   //     departureTime: '16:45',
-//   //     arrivalTime: '20:00',
-//   //     duration: '3h 15m',
-//   //     price: 279.99,
-//   //     aircraft: 'Boeing 737-900',
-//   //     seatsAvailable: 8
-//   //   }
-//   // ];
-
-//   isLoading.value = false;
-// };
-
-// const selectFlight = async (flight) => {
-//   try {
-//     let flight_id = flight.id
-//     const response = await axios.post('http://localhost:5001/booking/new', {
-//       user_id: 1,
-//       flight_id: flight_id,
-//     });
-
-//     console.log('Booking created:', response.data);
-//     router.push("/my-bookings")
-//   } catch (error) {
-//     console.error('Error creating booking:', error);
-//   }
-// };
-
-
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth.ts';
@@ -176,7 +47,7 @@ export default {
       await new Promise(resolve => setTimeout(resolve, 1000));
       const dateFromFormatted = this.formatDate(this.flightSearch.date);
 
-      axios.get('http://127.0.0.1:5000/flights', {
+      axios.get('http://localhost:8000/api/v1/flights', {
         params: {
           departure: this.flightSearch.departure,
           destination: this.flightSearch.destination,
@@ -198,27 +69,13 @@ export default {
 
       this.isLoading = false;
     },
-    // async selectFlight(flight) {
-    //   try {
-    //     console.log("Flight ID is "+this.flightId)
-    //     const response = await axios.post('http://localhost:5001/booking/new', {
-    //       user_id: 1,
-    //       flight_id: flight.id,
-    //     });
-
-    //     console.log('Booking created:', response.data);
-    //     this.router.push('/my-bookings');
-    //   } catch (error) {
-    //     console.error('Error creating booking:', error);
-    //   }
-    // },
     checkoutSeats(flight) {
       console.log("Flight ID is " + this.flightId)
       console.log('Checking seats for flight:', flight);
       this.currentFlight = flight;
 
       // Fetch seats for this flight
-      axios.get(`http://127.0.0.1:8080/seats/flight/${flight.id}`)
+      axios.get(`http://localhost:8000/seats/flight/${flight.id}`)
         .then(response => {
           console.log('Seats data:', response.data);
           this.seats = response.data;
@@ -254,10 +111,10 @@ export default {
         return;
       }
 
-      alert(`You have selected seat ${this.selectedSeat} for your flight from ${this.currentFlight.departure} to ${this.currentFlight.destination}.`);
       this.showSeatModal = false;
       try {
-        const response = await axios.post('http://localhost:5002/book_flight', {
+       
+        const response = await axios.post('http://localhost:8000/book_flight', {
           user_id: this.userId,
           flight_id: this.flightId,
           seat_id: this.selectedSeat
@@ -268,12 +125,8 @@ export default {
       } catch (error) {
         console.error('Error creating booking:', error);
       }
+      alert(`You have selected seat ${this.selectedSeat} for your flight from ${this.currentFlight.departure} to ${this.currentFlight.destination}.`);
 
-      // Here you would typically make an API call to reserve the seat
-      // axios.post('http://127.0.0.1:8080/seats/reserve', {
-      //   flightID: this.currentFlight.id,
-      //   seatID: this.selectedSeat
-      // })
       this.selectedSeat = ''
     }
   }

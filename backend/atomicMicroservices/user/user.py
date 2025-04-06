@@ -14,7 +14,18 @@ app.config['SESSION_PERMANENT'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours
 
 # Database config
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/user'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/user'
+
+from dotenv import load_dotenv
+# Load environment variables from .env file
+load_dotenv()
+
+db_base = os.getenv("hostdbURL")
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    # db_base + "/user"
+    # if db_base else 
+    "mysql+mysqlconnector://root@host.docker.internal:3306/user"
+)#checks in the ".env" file for "dbURL"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)

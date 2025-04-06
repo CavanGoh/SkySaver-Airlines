@@ -15,8 +15,11 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+db_base = os.getenv("hostdbURL")
 app.config["SQLALCHEMY_DATABASE_URI"] = (
-     os.getenv("hostdbURL")+"/booking" or "mysql+mysqlconnector://root@host.docker.internal:3306/booking"
+    # db_base + "/booking"
+    # if db_base else 
+    "mysql+mysqlconnector://root@host.docker.internal:3306/booking"
 )#checks in the ".env" file for "dbURL"
 
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root@localhost:3306/booking'
