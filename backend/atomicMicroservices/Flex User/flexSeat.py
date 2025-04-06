@@ -112,7 +112,7 @@ def create_flexseat():
             startDestination=data['startDestination'],
             endDestination=data['endDestination'],
             startDate=datetime.strptime(data['startDate'], '%Y-%m-%d').date(),  # Changed to Date
-            endDate=datetime.strptime(data['endDate'], '%Y-%m-%d').date()       # Changed to Date
+            endDate=datetime.strptime(data['endDate'], '%Y-%m-%d').date(),       # Changed to Date
         )
 
         db.session.add(new_record)
