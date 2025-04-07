@@ -62,8 +62,8 @@ const submitFlexBooking = async () => {
         userId: 1,  // Update this value as per your application’s data
         startDestination: flexBooking.value.departure,
         endDestination: flexBooking.value.destination,
-        startDateTime: flexBooking.value.startDate,
-        endDateTime: flexBooking.value.endDate,
+        startDate: flexBooking.value.startDate,
+        endDate: flexBooking.value.endDate,
       });
       
       console.log('Flex booking created:', response.data);
