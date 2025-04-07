@@ -35,13 +35,13 @@ firebase_admin.initialize_app(cred, {
 # Connect to RTDB
 ref = db.reference("flights")  # Reference to the "flights" node in RTDB
 
-# Function to convert date format from YYYY-MM-DD to DD-MM-YYYY
-def format_date(date_str):
-    try:
-        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-        return date_obj.strftime("%d-%m-%Y")
-    except ValueError:
-        return date_str  # Return the original string if conversion fails
+# # Function to convert date format from YYYY-MM-DD to DD-MM-YYYY
+# def format_date(date_str):
+#     try:
+#         date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+#         return date_obj.strftime("%d-%m-%Y")
+#     except ValueError:
+#         return date_str  # Return the original string if conversion fails
 
 # Get filtered flights BY departure, destination, and the flights taht fall between the 2 dates
 @app.route("/flights", methods=['GET'])
@@ -86,8 +86,8 @@ def get_filtered_flights():
             if flight_date < date_from or flight_date > date_to:
                 continue
 
-            # Format the date to DD-MM-YYYY
-            flight['departureDate'] = format_date(flight['departureDate'])
+            # # Format the date to DD-MM-YYYY
+            # flight['departureDate'] = format_date(flight['departureDate'])
 
             # If flight matches all filters, add it to the results
             filtered_flights.append(flight)
