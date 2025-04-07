@@ -2,7 +2,7 @@ import pika
 
 amqp_host = "localhost"
 amqp_port = 5672
-exchange_name = "notification_direct"
+exchange_name = "notify_direct"
 exchange_type = "direct"
 
 
@@ -53,6 +53,6 @@ channel = create_exchange(
 create_queue(
     channel=channel,
     exchange_name=exchange_name,
-    queue_name="notification",
-    routing_key="notification",
+    queue_name="notify",
+    routing_key="notify",
 )
