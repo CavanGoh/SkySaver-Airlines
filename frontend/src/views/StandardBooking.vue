@@ -47,7 +47,7 @@ export default {
       await new Promise(resolve => setTimeout(resolve, 1000));
       const dateFromFormatted = this.formatDate(this.flightSearch.date);
 
-      axios.get('http://localhost:8000/api/v1/flights', {
+      axios.get('http://localhost:8000/flights', {
         params: {
           departure: this.flightSearch.departure,
           destination: this.flightSearch.destination,

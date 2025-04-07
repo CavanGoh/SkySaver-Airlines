@@ -49,23 +49,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker # Set the active profile to "docker"
     #   - dbURL=mysql+mysqlconnector://root@host.docker.internal:3306/book # set in example/resources/application.properties
-  booking-management:
-    build:
-      context: ./compositeMicroservices/BookingManagement
-      dockerfile: Dockerfile
-    image: edrictan/booking-management:1.0
-    container_name: booking-management
-    ports:
-      - "5090:5090"
-    networks:
-      - flight-network
-      - kong-net
-    environment:
-      - FLIGHT_SERVICE_URL=http://flight:5000/flights
-      - PAYMENT_SERVICE_URL=http://host.docker.internal:5005/api/payment/flex
-      - SEAT_SERVICE_URL=http://seat:8080/seats
-      - FLEX_SERVICE_URL=http://host.docker.internal:5003/flexseat
-      - BOOKING_SERVICE_URL=http://booking:5001/booking
+  
 # Start of Booking microservice...comment out for testing
   booking:
     build:
@@ -97,12 +81,29 @@ services:
       - booking
       - seat
 
+  booking-management:
+    build:
+      context: ./compositeMicroservices/BookingManagement
+      dockerfile: Dockerfile
+    image: edrictan/booking-management:1.0
+    container_name: booking-management
+    ports:
+      - "5090:5090"
+    networks:
+      - flight-network
+      - kong-net
+    environment:
+      - FLIGHT_SERVICE_URL=http://flight:5000/flights
+      - PAYMENT_SERVICE_URL=http://host.docker.internal:5005/api/payment/flex
+      - SEAT_SERVICE_URL=http://seat:8080/seats
+      - FLEX_SERVICE_URL=http://host.docker.internal:5003/flexseat
+      - BOOKING_SERVICE_URL=http://booking:5001/booking
 
   #######################################
   # Postgres: The database used by Kong
   #######################################
   kong-database:
-    image: postgres:9.6
+    image: postgres:13
     platform: linux/amd64  # <- required for Mac M1 chip. Otherwise, can remove
     restart: always
     networks:
@@ -169,36 +170,36 @@ services:
   #######################################
   # Konga: Kong GUI
   #######################################
-  konga:
-    image: pantsel/konga
-    container_name: konga
-    restart: always
-    networks:
-      - kong-net
-    environment:
-      # NODE_ENV: development
-      DB_ADAPTER: postgres
-      DB_HOST: kong-database
-      DB_PORT: 5432
-      DB_USER: kong
-      DB_PASSWORD: password
-      DB_DATABASE: konga_db
-    ports:
-      - "1338:1337"
-    depends_on:
-      - kong
-      - wait-for-db
-    # entrypoint:
-    #   - /bin/sh
-    #   - -c
-    #   - "sleep 5 && npm start"
+  # konga:
+  #   image: pantsel/konga
+  #   container_name: konga
+  #   restart: always
+  #   networks:
+  #     - kong-net
+  #   environment:
+  #     # NODE_ENV: development
+  #     DB_ADAPTER: postgres
+  #     DB_HOST: kong-database
+  #     DB_PORT: 5432
+  #     DB_USER: kong
+  #     DB_PASSWORD: password
+  #     DB_DATABASE: konga_db
+  #   ports:
+  #     - "1338:1337"
+  #   depends_on:
+  #     - kong
+  #     - wait-for-db
+  #   # entrypoint:
+  #   #   - /bin/sh
+  #   #   - -c
+  #   #   - "sleep 5 && npm start"
 
-  wait-for-db:
-    image: busybox
-    depends_on:
-      - kong-database
-    command: sh -c "until nc -z kong-database 5432; do echo waiting for db...; sleep 2; done;"
-    networks:
-      - kong-net
+  # wait-for-db:
+  #   image: busybox
+  #   depends_on:
+  #     - kong-database
+  #   command: sh -c "until nc -z kong-database 5432; do echo waiting for db...; sleep 2; done;"
+  #   networks:
+  #     - kong-net
 
 
