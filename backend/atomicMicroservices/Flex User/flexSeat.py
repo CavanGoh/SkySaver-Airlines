@@ -55,13 +55,8 @@ def get_cancelled_match():
                 "message": "Missing required parameters: departure, destination, departureDate"
             }), 400
 
-        try:
-            departure_date = datetime.strptime(departure_date_str, '%Y-%m-%d')  # Adjust to date format
-        except ValueError:
-            return jsonify({
-                "code": 400,
-                "message": "Invalid date format."
-            }), 400
+        departure_date = datetime.strptime(departure_date_str, '%Y-%m-%d')
+        departure_date = departure_date.date()  # Convert to date object
 
         print(f"Searching for matches: {departure} → {destination} on {departure_date}")
 

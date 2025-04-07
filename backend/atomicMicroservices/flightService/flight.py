@@ -35,13 +35,19 @@ firebase_admin.initialize_app(cred, {
 # Connect to RTDB
 ref = db.reference("flights")  # Reference to the "flights" node in RTDB
 
-# # Function to convert date format from YYYY-MM-DD to DD-MM-YYYY
-# def format_date(date_str):
-#     try:
-#         date_obj = datetime.strptime(date_str, "%Y-%m-%d")
-#         return date_obj.strftime("%d-%m-%Y")
-#     except ValueError:
-#         return date_str  # Return the original string if conversion fails
+# Function to convert date format from DD-MM-YYYY to YYYY-MM-DD
+def format_date(date_str):
+    try:
+        date_obj = datetime.strptime(date_str, "%d-%m-%Y")
+        return date_obj.strftime("%Y-%m-%d")
+    except ValueError:
+        # Try another common format in case the input is already YYYY-MM-DD
+        try:
+            # Validate if it's already in YYYY-MM-DD format
+            datetime.strptime(date_str, "%Y-%m-%d")
+            return date_str  # Already in desired format
+        except ValueError:
+            return date_str  # Return original if conversion fails
 
 # Get filtered flights BY departure, destination, and the flights taht fall between the 2 dates
 @app.route("/flights", methods=['GET'])
@@ -64,6 +70,9 @@ def get_filtered_flights():
 
         # If no query parameters are provided, return all flights
         if not departure and not destination and not date_from and not date_to:
+            if isinstance(flights, list):
+                for flight in flights:
+                    flight['departureDate'] = format_date(flight['departureDate'])
             return jsonify({"code": 200, "data": {"flights": flights}})
 
         # Manually filter by the provided query parameters
@@ -86,8 +95,6 @@ def get_filtered_flights():
             if flight_date < date_from or flight_date > date_to:
                 continue
 
-            # # Format the date to DD-MM-YYYY
-            # flight['departureDate'] = format_date(flight['departureDate'])
 
             # If flight matches all filters, add it to the results
             filtered_flights.append(flight)
@@ -112,6 +119,7 @@ def get_flight_by_id(flight_id):
         if isinstance(flights, list):
             for flight in flights:
                 if flight and flight.get("id") == int(flight_id):
+                    flight['departureDate'] = format_date(flight['departureDate'])
                     return jsonify({"code": 200, "data": flight})
         else:
             return jsonify({"code": 500, "message": "Unexpected data structure in Firebase."}), 500

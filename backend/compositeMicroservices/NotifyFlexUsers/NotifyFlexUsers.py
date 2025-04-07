@@ -36,7 +36,7 @@ def notify_flex_user(data):
             params={
                 "departure": departure,
                 "destination": destination,
-                "departureDate": "2025-04-15" #hardcode
+                "departureDate": departureDate
             }
         )
         if flex_response.status_code == 200:

@@ -27,7 +27,7 @@ services:
     build:
       context: ./atomicMicroservices/flightService
       dockerfile: Dockerfile
-    image: edrictan/flight:1.0
+    image: edrictan/flight:2.0
     container_name: flight
     ports:
       - "5000:5000" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports 
