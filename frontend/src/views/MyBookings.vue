@@ -116,7 +116,7 @@ export default {
 
     async fetchFlexSeatBookings() {
       try {
-        let response = await axios.get("http://localhost:5003/flexseat?userId=" + this.userId, {
+        let response = await axios.get("http://localhost:8000/flexseat?userId=" + this.userId, {
 
         });
         const allBookings = response.data.data;

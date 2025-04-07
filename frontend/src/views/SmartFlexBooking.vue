@@ -73,7 +73,7 @@ const submitFlexBooking = async () => {
     console.log('Submitting flex booking:', flexBooking.value);
     
     try {
-      const response = await axios.post('http://localhost:5003/flexseat/new', {
+      const response = await axios.post('http://localhost:8000/flexseat/new', {
         userId: userId(),  // Update this value as per your application’s data
         startDestination: flexBooking.value.departure,
         endDestination: flexBooking.value.destination,

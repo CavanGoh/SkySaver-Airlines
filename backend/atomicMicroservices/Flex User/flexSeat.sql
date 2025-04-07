@@ -19,13 +19,13 @@ CREATE TABLE IF NOT EXISTS `flexSeat` (
 -- Dumping data for table `flexSeat`
 --
 
-INSERT INTO `flexSeat` (`userId`, `startDestination`, `endDestination`, `startDate`, `endDate`, `createdAt`) 
-VALUES 
-(1, 'Singapore', 'Tokyo', '2025-04-01', '2025-04-01', NOW()),
-(2, 'New York', 'Los Angeles', '2025-05-10', '2025-05-10', NOW()),
-(3, 'London', 'Paris', '2025-06-15', '2025-06-15', NOW()),
-(4, 'Dubai', 'Sydney', '2025-07-20', '2025-07-20', NOW()),
-(5, 'Berlin', 'Rome', '2025-08-05', '2025-08-05', NOW()),
-(6, 'New York', 'London', '2025-04-01', '2025-04-30', NOW()),
-(7, 'New York', 'London', '2025-04-01', '2025-04-30', NOW()),
-(8, 'New York', 'London', '2025-04-01', '2025-04-30', NOW());
+-- INSERT INTO `flexSeat` (`userId`, `startDestination`, `endDestination`, `startDate`, `endDate`, `createdAt`) 
+-- VALUES 
+-- (1, 'Singapore', 'Tokyo', '2025-04-01', '2025-04-01', NOW()),
+-- (2, 'New York', 'Los Angeles', '2025-05-10', '2025-05-10', NOW()),
+-- (3, 'London', 'Paris', '2025-06-15', '2025-06-15', NOW()),
+-- (4, 'Dubai', 'Sydney', '2025-07-20', '2025-07-20', NOW()),
+-- (5, 'Berlin', 'Rome', '2025-08-05', '2025-08-05', NOW()),
+-- (6, 'New York', 'London', '2025-04-01', '2025-04-30', NOW()),
+-- (7, 'New York', 'London', '2025-04-01', '2025-04-30', NOW()),
+-- (8, 'New York', 'London', '2025-04-01', '2025-04-30', NOW());

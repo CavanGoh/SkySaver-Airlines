@@ -61,8 +61,16 @@ services:
       - "5001:5001" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports
     networks:
     - kong-net
-    # environment:
-      # - dbURL=mysql+mysqlconnector://root@host.docker.internal:3306/book # set in example/resources/application.properties
+  flex-seat:
+    build:
+      context: "./atomicMicroservices/Flex User"
+      dockerfile: Dockerfile
+    image: edrictan/flex-seat:1.0
+    container_name: flex-seat
+    ports:
+      - "5003:5003" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports
+    networks:
+    - kong-net
 
   #######################################
   # Composite Microservices: To spin them up

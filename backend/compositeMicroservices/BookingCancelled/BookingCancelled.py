@@ -11,8 +11,8 @@ CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 
 
-booking_URL = "http://localhost:5001/booking"
-seat_URL="http://localhost:8080/seats"
+booking_URL = "http://booking:5001/booking"
+seat_URL="http://seat:8080/seats"
 
 amqp_host = "localhost"
 amqp_port = 5672
