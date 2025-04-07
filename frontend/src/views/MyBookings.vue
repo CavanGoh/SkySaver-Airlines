@@ -70,16 +70,16 @@ export default {
     // Function to handle booking cancellation
     async cancelBooking(booking_id) {
       try {
-        const index = this.bookings.findIndex(booking => booking.booking_id === booking_id);
+        const bookingToCancel = this.bookings.find(b => b.booking_id === booking_id);
 
-        if (index !== -1) {
+        if (bookingToCancel) {
           await axios.post(`http://localhost:5100/booking_cancelled`, {
             booking_id: booking_id,
+            flight_id: bookingToCancel.flight_id,
+            seat_id: bookingToCancel.seat_id,
             user_id: this.userId,
           });
-
-          this.bookings.splice(index, 1);
-
+          this.bookings = this.bookings.filter(b => b.booking_id !== booking_id);
           console.log(`Booking ${booking_id} cancelled successfully`);
         }
       } catch (err) {
