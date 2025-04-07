@@ -55,6 +55,18 @@ const router = createRouter({
       name: 'TestBooking',
       component: () => import('../views/DiscountedBooking.vue'),
       props: true
+    },
+    {
+      path: '/notification/:id/:flightId/:seatId',
+      name: 'NotificationDetail',
+      component: () => import('../views/NotificationDetail.vue'),
+      props: true
+    },
+    {
+      path: '/booking/:flightId/:seatId',
+      name: 'DiscountedBooking',
+      component: () => import('../views/DiscountedBooking.vue'),
+      props: true
     }
   ]
 });

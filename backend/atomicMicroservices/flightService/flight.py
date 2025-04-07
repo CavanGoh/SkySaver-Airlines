@@ -5,12 +5,12 @@ from dotenv import load_dotenv
 import firebase_admin
 from firebase_admin import credentials, db
 from flask import Flask, jsonify, request
-# from flask_cors import CORS
+from flask_cors import CORS
 from datetime import datetime
 
 app = Flask(__name__)
 # CORS(app)
-# CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 
 # Load environment variables from .env file

@@ -19,6 +19,7 @@ class Notification(db.Model):
     notification_id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.Integer, nullable=False)
     flight_id = db.Column(db.Integer, nullable=False)
+    seat_id = db.Column(db.String(10), nullable=True)
     message = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     seen = db.Column(db.Boolean, default=False)
@@ -30,6 +31,7 @@ class Notification(db.Model):
             "notification_id": self.notification_id,
             "user_id": self.user_id,
             "flight_id": self.flight_id,
+            "seat_id": self.seat_id,
             "message": self.message,
             "created_at": self.created_at.isoformat(),
             "seen": self.seen,
@@ -46,6 +48,7 @@ def send_notifications():
     data = request.json
     users = data['users']
     flight_details = data['flight_details']
+    seat_id = data.get('seat_id')
 
     notifications = []
     for user in users:

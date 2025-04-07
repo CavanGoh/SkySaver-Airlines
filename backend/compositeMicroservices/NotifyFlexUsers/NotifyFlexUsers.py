@@ -52,7 +52,8 @@ def notify_flex_user(data):
                             "departure": departure,
                             "destination": destination,
                             "departureDate": departureDate
-                        }
+                        },
+                        "seat_id": seat_id
                     }
                     
                     # Call notification service
