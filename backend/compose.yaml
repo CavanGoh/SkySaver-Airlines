@@ -98,6 +98,7 @@ services:
       - SEAT_SERVICE_URL=http://seat:8080/seats
       - FLEX_SERVICE_URL=http://host.docker.internal:5003/flexseat
       - BOOKING_SERVICE_URL=http://booking:5001/booking
+      - BOOK_FLIGHT_URL=http://book-flight:5002/book_flight
 
   #######################################
   # Postgres: The database used by Kong

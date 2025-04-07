@@ -22,13 +22,15 @@ PAYMENT_SERVICE_URL = os.environ.get('PAYMENT_SERVICE_URL', 'http://host.docker.
 SEAT_SERVICE_URL = os.environ.get('SEAT_SERVICE_URL', 'http://seat:8080/seats')
 
 # FlexSeat service is not containerized, use host.docker.internal
-FLEX_SERVICE_URL = os.environ.get('FLEX_SERVICE_URL', 'http://host.docker.internal:5003/flexseat')
+FLEX_SERVICE_URL = os.environ.get('FLEX_SERVICE_URL', 'http://host.docker.internal:5003')
 
 # Booking service is not containerized, use host.docker.internal
 BOOKING_SERVICE_URL = os.environ.get('BOOKING_SERVICE_URL',  "http://booking:5001/booking")
 
 # External service, keep the full URL
 OUTSYSTEMS_PRICE_URL = 'https://personal-y0j5ezns.outsystemscloud.com/Price/rest/PriceAPI/CalculatePrice'
+
+BOOK_FLIGHT_COMPOSITE_URL = os.environ.get('BOOK_FLIGHT_URL', 'http://book-flight:5002/book_flight')
 
 
 @booking_management.route('/api/booking/accept', methods=['POST'])
@@ -113,20 +115,20 @@ def process_payment():
         return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
 
 
-def update_seat_availability(flight_id, seat_id, availability):
-    """
-    Update the availability of a seat in the seat service.
-    """
-    url = f"{SEAT_SERVICE_URL}/{flight_id}/{seat_id}/availability"
+# def update_seat_availability(flight_id, seat_id, availability):
+#     """
+#     Update the availability of a seat in the seat service.
+#     """
+#     url = f"{SEAT_SERVICE_URL}/{flight_id}/{seat_id}/availability"
     
-    try:
-        # Send availability in the request body as JSON, not as a query parameter
-        response = requests.put(url, json={"availability": availability})
-        response.raise_for_status()
-        return True
-    except requests.RequestException as e:
-        print(f"Error updating seat availability: {str(e)}")
-        return False
+#     try:
+#         # Send availability in the request body as JSON, not as a query parameter
+#         response = requests.put(url, json={"availability": availability})
+#         response.raise_for_status()
+#         return True
+#     except requests.RequestException as e:
+#         print(f"Error updating seat availability: {str(e)}")
+#         return False
 
 
 @booking_management.route('/api/booking/confirm', methods=['POST'])
@@ -135,22 +137,28 @@ def confirm_booking():
     
     # Validate request data for both seat and flex user information
     required_fields = ['flight_id', 'seat_id', 'userId', 'startDestination', 
-                      'endDestination', 'startDateTime', 'endDateTime']
+                      'endDestination', 'startDate', 'endDate']
     
     if not data or not all(field in data for field in required_fields):
         return jsonify({'error': 'Missing required parameters', 
                        'required_fields': required_fields}), 400
     
-    # Step 1: Update seat availability
-    seat_updated = update_seat_availability(data['flight_id'], data['seat_id'], False)
+    bookFlightResponse = requests.post(BOOK_FLIGHT_COMPOSITE_URL,json={ 
+        "user_id": data['userId'],
+        "flight_id": data['flight_id'],
+        "seat_id": data['seat_id']
+    })
+    print("Flight response")
+    print(bookFlightResponse.json())
+
     
     # Step 2: Remove user from flex list
     flex_data = {
         'userId': data['userId'],
         'startDestination': data['startDestination'],
         'endDestination': data['endDestination'],
-        'startDateTime': data['startDateTime'],
-        'endDateTime': data['endDateTime']
+        'startDate': data['startDate'],
+        'endDate': data['endDate']
     }
     
     try:
@@ -161,61 +169,30 @@ def confirm_booking():
         flex_user_removed = False
         flex_response_data = {'error': str(e)}
     
-    # Step 3: Create booking record
-    booking_created = False
-    booking_data = {}
-    
-    if seat_updated:  # Only create booking if seat was updated successfully
-        try:
-            booking_request = {
-                'user_id': data['userId'],  # Use userId from the request
-                'flight_id': data['flight_id'],
-                'seat_id': data['seat_id']
-            }
-            
-            booking_response = requests.post(f"{BOOKING_SERVICE_URL}/new", json=booking_request)
-
-            print(f"BOOKING_SERVICE_URL: {BOOKING_SERVICE_URL}")
-            print(f"Booking request URL: {BOOKING_SERVICE_URL}")
-            print(f"Booking request data: {booking_request}")
-            if booking_response.status_code in [201, 409]:  # Success or already exists
-                booking_created = True
-                booking_data = booking_response.json().get('data', {})
-            else:
-                print(f"Booking creation failed: {booking_response.text}")
-        except Exception as e:
-            print(f"Error creating booking: {str(e)}")
-    
     # Determine overall success based on all operations
-    if seat_updated and flex_user_removed and booking_created:
+    if bookFlightResponse.status_code == 200 and flex_user_removed:
         return jsonify({
             'status': 'confirmed',
             'message': 'Flex booking confirmed: seat reserved, user removed from flex list, and booking created',
             'flight_id': data['flight_id'],
             'seat_id': data['seat_id'],
-            'booking': booking_data,
-            'flex_data': flex_response_data.get('data', {})
+            'booking': bookFlightResponse.json(),
+            'flex_data': flex_response_data
         }), 200
-    elif seat_updated and booking_created:
+    elif bookFlightResponse.status_code == 200:
         return jsonify({
             'status': 'partial_success',
             'message': 'Seat reserved and booking created, but failed to remove user from flex list',
             'flight_id': data['flight_id'],
             'seat_id': data['seat_id'],
-            'booking': booking_data,
+            'booking': bookFlightResponse.json(),
             'flex_error': flex_response_data.get('message', 'Unknown error')
-        }), 207
-    elif seat_updated:
-        return jsonify({
-            'status': 'partial_success',
-            'message': 'Seat reserved but failed to create booking and/or remove user from flex list',
-            'flight_id': data['flight_id'],
-            'seat_id': data['seat_id']
         }), 207
     else:
         return jsonify({
             'status': 'failed',
-            'message': 'Unable to reserve seat. Booking not confirmed.'
+            'message': 'Unable to reserve seat. Booking not confirmed.',
+            'booking_error': bookFlightResponse.json().get('message', 'Unknown error')
         }), 500
 
 if __name__ == '__main__':
