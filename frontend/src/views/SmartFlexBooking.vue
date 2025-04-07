@@ -83,6 +83,8 @@ const submitFlexBooking = async () => {
       
       console.log('Flex booking created:', response.data);
       alert(`Your flex seat booking has been confirmed for your flight from ${flexBooking.value.departure} to ${flexBooking.value.destination} from ${flexBooking.value.startDate} to ${flexBooking.value.endDate}.`);
+      router.push('/my-bookings?tab=smart-flex');
+
 
     } catch (error) {
       console.error('Error creating flex booking:', error);
