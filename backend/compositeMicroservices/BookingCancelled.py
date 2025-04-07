@@ -71,9 +71,9 @@ def cancel_booking():
     booking_response = requests.put(booking_URL + "/cancel/" + str(booking_id))
     if booking_response.status_code == 200:
         seat_response = requests.put(
-            seat_URL + "/" + flight_id + "/" + seat_id + "/availability",
-            json={"availability": True}
-        )
+        f"{seat_URL}/{flight_id}/{seat_id}/availability",
+        json={"availability": True}
+)
         if seat_response.status_code == 200:
             print("Seat updated", seat_response.status_code)
             

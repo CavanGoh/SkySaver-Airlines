@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import { useAuthStore } from '../stores/auth.ts';
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 const flexBooking = ref({
   departure: '',
@@ -18,6 +20,11 @@ const isLoading = ref(false);
 // Get today's date in YYYY-MM-DD format for min attribute
 const today = new Date().toISOString().split('T')[0];
 const minEndDate = ref(today);
+
+const isLoggedIn = () => authStore.isAuthenticated;
+const userId = () => authStore.user?.id || null;
+
+const errorMessage = ref('');
 
 // Watch for changes in startDate and update minEndDate
 watch(() => flexBooking.value.startDate, (newStartDate) => {
@@ -35,7 +42,15 @@ watch(() => flexBooking.value.startDate, (newStartDate) => {
 const submitFlexBooking = async () => {
   try {
     isLoading.value = true;
-    
+    errorMessage.value = '';
+
+    if (!isLoggedIn()) {
+      errorMessage.value = "You must be logged in to create a flex booking";
+      setTimeout(() => {
+        router.push('/login');
+      }, 2000);
+      return;
+    }
     // Validate dates
     if (!flexBooking.value.startDate || !flexBooking.value.endDate) {
       alert('Please select both start and end dates');
@@ -59,7 +74,7 @@ const submitFlexBooking = async () => {
     
     try {
       const response = await axios.post('http://localhost:5003/flexseat/new', {
-        userId: 1,  // Update this value as per your application’s data
+        userId: userId(),  // Update this value as per your application’s data
         startDestination: flexBooking.value.departure,
         endDestination: flexBooking.value.destination,
         startDate: flexBooking.value.startDate,
@@ -67,7 +82,8 @@ const submitFlexBooking = async () => {
       });
       
       console.log('Flex booking created:', response.data);
-      router.push('/booking-confirmation');
+      alert(`Your flex seat booking has been confirmed for your flight from ${flexBooking.value.departure} to ${flexBooking.value.destination} from ${flexBooking.value.startDate} to ${flexBooking.value.endDate}.`);
+
     } catch (error) {
       console.error('Error creating flex booking:', error);
       alert('Error creating booking. Please try again.');
