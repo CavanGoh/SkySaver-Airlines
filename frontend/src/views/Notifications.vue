@@ -7,61 +7,18 @@ const router = useRouter();
 const notifications = ref([]);
 const loading = ref(true);
 const error = ref(null);
+const userId = 1; // This would come from your auth store in a real app
 
 onMounted(async () => {
   try {
     loading.value = true;
     
-    // In a real implementation, you would fetch notifications from an API
-    // For now, we'll create mock data to simulate notifications from RabbitMQ
-    notifications.value = [
-      {
-        id: '123',
-        event_type: 'booking_cancelled',
-        booking_id: 456,
-        timestamp: new Date().toISOString(),
-        details: {
-          message: 'A seat has become available at a discounted price!',
-          status: 'cancelled',
-          flight: {
-            id: 1,
-            departure: 'New York',
-            destination: 'London',
-            departureDate: '06-04-2025',
-            departureTime: '08:30:00',
-            price: 550
-          },
-          seat: {
-            flightID: 1,
-            seatID: '10A',
-            availability: 1
-          }
-        }
-      },
-      {
-        id: '124',
-        event_type: 'booking_cancelled',
-        booking_id: 457,
-        timestamp: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-        details: {
-          message: 'A seat has become available at a discounted price!',
-          status: 'cancelled',
-          flight: {
-            id: 2,
-            departure: 'Singapore',
-            destination: 'Tokyo',
-            departureDate: '10-04-2025',
-            departureTime: '14:15:00',
-            price: 420
-          },
-          seat: {
-            flightID: 2,
-            seatID: '15C',
-            availability: 1
-          }
-        }
-      }
-    ];
+    // Fetch notifications from the notification service
+    const response = await axios.get(`http://localhost:5021/notifications?user_id=${userId}`);
+    
+    if (response.status === 200) {
+      notifications.value = response.data;
+    }
     
     loading.value = false;
   } catch (err) {
@@ -83,12 +40,20 @@ const formatDate = (dateString) => {
 };
 
 const viewDiscountedSeat = (notification) => {
+  // Mark notification as seen
+  axios.put('http://localhost:5021/notifications/mark-seen', {
+    notification_id: notification.notification_id
+  });
+  
+  // Extract seat ID from the flight ID
+  // Since your notification doesn't include seat ID, we'll need to pass just the flight ID
+  // and handle seat selection in the detail page
   router.push({
     name: 'NotificationDetail',
     params: { 
-      id: notification.id,
-      flightId: notification.details.flight.id,
-      seatId: notification.details.seat.seatID
+      id: notification.notification_id,
+      flightId: notification.flight_id,
+      seatId: notification.seat_id 
     }
   });
 };
@@ -99,7 +64,7 @@ const viewDiscountedSeat = (notification) => {
     <div class="booking-header">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 class="text-4xl font-bold text-white mb-4">Notifications</h1>
-        <p class="text-white text-lg max-w-2xl">Stay updated with the latest discounts and special offers for your travel plans.</p>
+        <p class="text-white text-lg max-w-2xl">Stay updated with the latest available seats for your travel plans.</p>
       </div>
     </div>
 
@@ -133,52 +98,27 @@ const viewDiscountedSeat = (notification) => {
         <div v-else class="space-y-4">
           <div
             v-for="notification in notifications"
-            :key="notification.id"
-            class="bg-white shadow-sm rounded-lg p-6 border-l-4 border-blue-500"
+            :key="notification.notification_id"
+            class="bg-white shadow-sm rounded-lg p-6 border-l-4"
+            :class="notification.seen ? 'border-gray-300' : 'border-blue-500'"
           >
             <div class="flex justify-between items-start mb-4">
               <div>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  Discounted Seat Available
+                  Seat Available
                 </span>
                 <p class="text-sm text-gray-500 mt-1">
-                  {{ formatDate(notification.timestamp) }}
+                  {{ formatDate(notification.created_at) }}
                 </p>
               </div>
-              <span class="text-sm font-medium text-green-600">
-                Save 30%
+              <span v-if="!notification.seen" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                New
               </span>
             </div>
             
             <h3 class="text-lg font-semibold text-gray-900 mb-2">
-              {{ notification.details.message }}
+              {{ notification.message }}
             </h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div>
-                <p class="text-sm text-gray-500">Flight</p>
-                <p class="font-medium">{{ notification.details.flight.departure }} to {{ notification.details.flight.destination }}</p>
-              </div>
-              <div>
-                <p class="text-sm text-gray-500">Date & Time</p>
-                <p class="font-medium">{{ notification.details.flight.departureDate }} at {{ notification.details.flight.departureTime }}</p>
-              </div>
-              <div>
-                <p class="text-sm text-gray-500">Seat</p>
-                <p class="font-medium">{{ notification.details.seat.seatID }}</p>
-              </div>
-            </div>
-            
-            <div class="flex items-center justify-between mt-4">
-              <div>
-                <p class="text-sm text-gray-500">Original Price</p>
-                <p class="text-lg font-medium line-through">${{ notification.details.flight.price }}</p>
-              </div>
-              <div class="text-right">
-                <p class="text-sm text-green-600 font-medium">Discounted Price</p>
-                <p class="text-xl font-bold text-green-600">${{ Math.round(notification.details.flight.price * 0.7) }}</p>
-              </div>
-            </div>
             
             <div class="mt-4 flex justify-end">
               <button
@@ -195,30 +135,3 @@ const viewDiscountedSeat = (notification) => {
   </div>
 </template>
 
-<style>
-.booking-page {
-  min-height: 100vh;
-  background-color: #f8fafc;
-}
-
-.booking-header {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-    url('https://images.unsplash.com/photo-1500835556837-99ac94a94552?q=80&w=2069&auto=format&fit=crop');
-  background-size: cover;
-  background-position: center;
-  padding: 6rem 0 8rem;
-  position: relative;
-}
-
-.booking-header::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 70px;
-  background-image: url('data:image/svg+xml;charset=utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 70" preserveAspectRatio="none"%3E%3Cpath fill="%23f8fafc" d="M0,0 C240,70 480,70 720,35 C960,0 1200,0 1440,35 L1440,70 L0,70 Z"%3E%3C/path%3E%3C/svg%3E');
-  background-size: cover;
-  background-position: center;
-}
-</style>

@@ -13,6 +13,7 @@ CREATE TABLE notifications (
     is_active BOOLEAN DEFAULT TRUE
 );
 
+ALTER TABLE notifications ADD COLUMN seat_id VARCHAR(10);
 -- Create indexes for better performance
 CREATE INDEX idx_notifications_user_id ON notifications(user_id);
 CREATE INDEX idx_notifications_flight_id ON notifications(flight_id);
