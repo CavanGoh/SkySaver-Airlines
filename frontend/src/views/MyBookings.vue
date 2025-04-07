@@ -100,7 +100,23 @@ export default {
       } catch (err) {
         console.error('Error fetching bookings:', err);
       }
-    }
+    },
+
+    async fetchFlexSeatBookings() {
+      try {
+        let response = await axios.get("http://localhost:5003/flexseat", {
+          params: { userId: this.userId }
+        });
+        const allBookings = response.data.data.booking;
+        this.bookings = allBookings.filter(booking =>
+          booking.status === 'Confirmed'
+        );
+        console.log(this.bookings);
+      } catch (err) {
+        console.error('Error fetching bookings:', err);
+      }
+  }
+
   },
   mounted() {
     // Call fetchUserBookings when the component is mounted
