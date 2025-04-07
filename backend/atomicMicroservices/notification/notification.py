@@ -55,6 +55,7 @@ def send_notifications():
         notification = Notification(
             user_id=user,
             flight_id=flight_details['id'],
+            seat_id=seat_id,
             message=f"Flight {flight_details['id']} from {flight_details['departure']} to {flight_details['destination']} on {flight_details['departureDate']} was cancelled. You may now book."
         )
         db.session.add(notification)
