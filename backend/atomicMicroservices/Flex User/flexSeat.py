@@ -1,8 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from datetime import datetime,timezone
-
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
@@ -16,27 +15,24 @@ class FlexSeat(db.Model):
     userId = db.Column(db.Integer, primary_key=True)
     startDestination = db.Column(db.String(100), primary_key=True)
     endDestination = db.Column(db.String(100), primary_key=True)
-    startDateTime = db.Column(db.DateTime, primary_key=True)
-    endDateTime = db.Column(db.DateTime, primary_key=True)
+    startDate = db.Column(db.Date, primary_key=True)  # Changed from DateTime to Date
+    endDate = db.Column(db.Date, primary_key=True)    # Changed from DateTime to Date
     createdAt = db.Column(db.DateTime, default=datetime.utcnow)
 
     def json(self):
         return {
-        'userId': self.userId,
-        'startDestination': self.startDestination,
-        'endDestination': self.endDestination,
-        'startDateTime': self.startDateTime.strftime('%Y-%m-%d %H:%M:%S'),
-        'endDateTime': self.endDateTime.strftime('%Y-%m-%d %H:%M:%S'),
-        'createdAt': self.createdAt.strftime('%Y-%m-%d %H:%M:%S')
+            'userId': self.userId,
+            'startDestination': self.startDestination,
+            'endDestination': self.endDestination,
+            'startDate': self.startDate.strftime('%Y-%m-%d'),  # Format as Date
+            'endDate': self.endDate.strftime('%Y-%m-%d'),      # Format as Date
+            'createdAt': self.createdAt.strftime('%Y-%m-%d %H:%M:%S')
         }
-
 
 @app.route('/flexseat', methods=['GET'])
 def get_all_flexseats():
     user_id = request.args.get('userId')
     if user_id:
-        ## if userId is passed as a query param, filter using it
-        ## if not, return all records
         records = FlexSeat.query.filter_by(userId=user_id).all()
     else:
         records = FlexSeat.query.all()
@@ -46,64 +42,38 @@ def get_all_flexseats():
         "data": [record.json() for record in records]
     })
 
-
-#WK added
 @app.route('/flexseat/match', methods=['GET'])
 def get_cancelled_match():
     try:
         departure = request.args.get('departure')
         destination = request.args.get('destination')
         departure_date_str = request.args.get('departureDate')
-        departure_time_str = request.args.get('departureTime', '00:00:00')  # Default to start of day if not provided
         
-        # Input validation
         if not all([departure, destination, departure_date_str]):
             return jsonify({
                 "code": 400,
                 "message": "Missing required parameters: departure, destination, departureDate"
             }), 400
-        
-        # Convert the departure date string to a datetime object
+
         try:
-            # Check if time is already included in the date string
-            if 'T' in departure_date_str or ' ' in departure_date_str:
-                departure_datetime = datetime.fromisoformat(departure_date_str.replace('T', ' '))
-            else:
-                # Combine date and time
-                departure_datetime = datetime.strptime(
-                    f"{departure_date_str} {departure_time_str}", 
-                    '%Y-%m-%d %H:%M:%S'
-                )
+            departure_date = datetime.strptime(departure_date_str, '%Y-%m-%d')  # Adjust to date format
         except ValueError:
-            # Try alternate date format (MM-DD-YYYY)
-            try:
-                if '-' in departure_date_str:
-                    parts = departure_date_str.split('-')
-                    if len(parts[0]) == 2:  # MM-DD-YYYY format
-                        departure_date_str = f"{parts[2]}-{parts[0]}-{parts[1]}"
-                departure_datetime = datetime.strptime(
-                    f"{departure_date_str} {departure_time_str}", 
-                    '%Y-%m-%d %H:%M:%S'
-                )
-            except ValueError as e:
-                return jsonify({
-                    "code": 400,
-                    "message": f"Invalid date format: {str(e)}"
-                }), 400
-        
-        print(f"Searching for matches: {departure} → {destination} on {departure_datetime}")
-        
-        # Query the database for matching FlexSeat records
+            return jsonify({
+                "code": 400,
+                "message": "Invalid date format."
+            }), 400
+
+        print(f"Searching for matches: {departure} → {destination} on {departure_date}")
+
         matches = FlexSeat.query.filter(
             FlexSeat.startDestination == departure,
             FlexSeat.endDestination == destination,
-            FlexSeat.startDateTime <= departure_datetime,
-            FlexSeat.endDateTime >= departure_datetime
+            FlexSeat.startDate <= departure_date,
+            FlexSeat.endDate >= departure_date
         ).all()
-        
+
         matched_user_ids = [match.userId for match in matches]
-        
-        # Return only the matched userIds
+
         return jsonify({
             "code": 200,
             "data": {
@@ -112,28 +82,23 @@ def get_cancelled_match():
                 "searchCriteria": {
                     "departure": departure,
                     "destination": destination,
-                    "departureDateTime": departure_datetime.strftime('%Y-%m-%d %H:%M:%S')
+                    "departureDate": departure_date.strftime('%Y-%m-%d')
                 }
             }
         })
-        
+
     except Exception as e:
         return jsonify({
             "code": 500,
             "message": f"An error occurred: {str(e)}"
         }), 500
 
-
-## to create a new search
 @app.route('/flexseat/new', methods=['POST'])
 def create_flexseat():
     try:
         data = request.get_json()
-        ## converts the input JSON into a FlexSeat object
 
-
-         # Validate required fields
-        required_fields = ['userId', 'startDestination', 'endDestination', 'startDateTime', 'endDateTime']
+        required_fields = ['userId', 'startDestination', 'endDestination', 'startDate', 'endDate']
         missing_fields = [field for field in required_fields if field not in data]
 
         if missing_fields:
@@ -141,15 +106,13 @@ def create_flexseat():
                 "code": 400,
                 "message": f"Missing required fields: {', '.join(missing_fields)}"
             }), 400
-        
 
-        
         new_record = FlexSeat(
             userId=data['userId'],
             startDestination=data['startDestination'],
             endDestination=data['endDestination'],
-            startDateTime=datetime.strptime(data['startDateTime'], '%Y-%m-%d %H:%M:%S'),
-            endDateTime=datetime.strptime(data['endDateTime'], '%Y-%m-%d %H:%M:%S')
+            startDate=datetime.strptime(data['startDate'], '%Y-%m-%d').date(),  # Changed to Date
+            endDate=datetime.strptime(data['endDate'], '%Y-%m-%d').date(),       # Changed to Date
         )
 
         db.session.add(new_record)
@@ -167,20 +130,19 @@ def create_flexseat():
             "message": f"An error occurred: {str(e)}"
         }), 500
 
-## to remove a flex seat record
 @app.route('/flexseat/delete', methods=['DELETE'])
 def delete_flexseat():
     try:
         data = request.get_json()
-        start_date = datetime.fromisoformat(data['startDateTime'].replace('Z', '+00:00')).replace(tzinfo=timezone.utc)
-        end_date = datetime.fromisoformat(data['endDateTime'].replace('Z', '+00:00')).replace(tzinfo=timezone.utc)
-        
+        start_date = datetime.strptime(data['startDate'], '%Y-%m-%d').date()  # Changed to Date
+        end_date = datetime.strptime(data['endDate'], '%Y-%m-%d').date()       # Changed to Date
+
         record = FlexSeat.query.filter_by(
             userId=data['userId'],
             startDestination=data['startDestination'],
             endDestination=data['endDestination'],
-            startDateTime=start_date,
-            endDateTime=end_date
+            startDate=start_date,
+            endDate=end_date
         ).first()
 
         if not record:
@@ -199,13 +161,11 @@ def delete_flexseat():
         })
     except Exception as e:
         db.session.rollback()
-        print(f"Error in delete_flexseat: {str(e)}")  # Add this line for debugging
+        print(f"Error in delete_flexseat: {str(e)}")
         return jsonify({
             "code": 500,
             "message": f"An error occurred: {str(e)}"
         }), 500
 
-
-## run app
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5003, debug=True)
