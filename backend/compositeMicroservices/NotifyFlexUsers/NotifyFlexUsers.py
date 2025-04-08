@@ -41,12 +41,15 @@ def notify_flex_user(data):
         )
         if flex_response.status_code == 200:
             flex_data = flex_response.json().get("data", {})
-            user_ids = flex_data.get("userIds", [])
+            flex_users = flex_data.get("users", [])
             print("FlexSeat match data:", flex_data)
-            if user_ids:
+    
+            if flex_users:
+                for user in flex_users:
                     # Send notifications to matching users
                     notification_data = {
-                        "users": user_ids,
+                        "users": [user["userId"]],
+                        "flex_id": user["flexId"],
                         "flight_details": {
                             "id": flight_id,
                             "departure": departure,

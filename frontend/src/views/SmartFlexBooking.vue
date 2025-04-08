@@ -88,13 +88,14 @@ const submitFlexBooking = async () => {
 
     } catch (error) {
       console.error('Error creating flex booking:', error);
-      alert('Error creating booking. Please try again.');
+      errorMessage.value ='Error creating booking. Please try again.';
     }
     
     isLoading.value = false;
   } catch (error) {
-    console.error('Error submitting booking:', error);
-    alert('Error submitting booking. Please try again.');
+    console.error('Unexpected error:', error);
+    errorMessage.value ='An unexpected error occurred. Please try again.';
+  } finally {
     isLoading.value = false;
   }
 };
@@ -186,6 +187,7 @@ const submitFlexBooking = async () => {
             >
               {{ isLoading ? 'Processing...' : 'Book Smart Flex Seat' }}
             </button>
+            <p v-if="errorMessage" class="text-sm text-red-600">{{ errorMessage }}</p>
           </div>
         </form>
       </div>

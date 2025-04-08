@@ -75,9 +75,7 @@ export default {
         this.fetchUserBookings();
       } else if (tab === 'smart-flex') {
         this.fetchFlexSeatBookings();
-      } else if (tab === 'cancelled') {
-        this.fetchCancelledBookings();
-      }
+      } 
     },
     // Function to handle booking cancellation
     async cancelBooking(booking_id) {
@@ -152,7 +150,7 @@ export default {
         <!-- Tabs -->
         <div class="border-b border-gray-200">
           <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-            <button v-for="tab in ['upcoming', 'cancelled', 'smart-flex']" :key="tab" @click="switchTab(tab)" :class="[
+            <button v-for="tab in ['upcoming', 'smart-flex']" :key="tab" @click="switchTab(tab)" :class="[
               activeTab === tab
                 ? 'border-blue-500 text-blue-600'
                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
@@ -196,12 +194,6 @@ export default {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div v-if="activeTab === 'cancelled'" class="text-center py-12">
-            <div v-if="bookings.length === 0">
-              <p class="text-gray-500">No cancelled bookings found.</p>
             </div>
           </div>
 

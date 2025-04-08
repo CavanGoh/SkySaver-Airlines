@@ -6,13 +6,14 @@ USE flexSeat;
 DROP TABLE IF EXISTS `flexSeat`;
 
 CREATE TABLE IF NOT EXISTS `flexSeat` (
-    `userId` INT NOT NULL,                            -- Passenger identifier
-    `startDestination` VARCHAR(100) NOT NULL,             -- Departure location
-    `endDestination` VARCHAR(100) NOT NULL,               -- Arrival location
-    `startDate` DATE NOT NULL,                           -- Start of preferred date range
-    `endDate` DATE NOT NULL,                             -- End of preferred date range
-    `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,      -- Timestamp for when the search was created
-    PRIMARY KEY (userId, startDestination, endDestination, startDate, endDate)
+    `flexId` INT AUTO_INCREMENT PRIMARY KEY,         -- New auto-incrementing primary key
+    `userId` INT NOT NULL,                           -- Passenger identifier
+    `startDestination` VARCHAR(100) NOT NULL,        -- Departure location
+    `endDestination` VARCHAR(100) NOT NULL,          -- Arrival location
+    `startDate` DATE NOT NULL,                       -- Start of preferred date range
+    `endDate` DATE NOT NULL,                         -- End of preferred date range
+    `createdAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Timestamp for when the search was created
+    UNIQUE KEY `unique_flex_entry` (userId, startDestination, endDestination, startDate, endDate)
 ) Engine=InnoDB DEFAULT CHARSET=utf8;
 
 --

@@ -17,7 +17,8 @@ export default {
       searchResults: [],
       isLoading: false,
       selectedSeat: '',
-      flightId:''
+      flightId:'',
+      errorMessage: ''
     };
   },
   setup() {
@@ -43,6 +44,7 @@ export default {
     },
     async searchFlights() {
       this.isLoading = true;
+      this.errorMessage = '';
 
       await new Promise(resolve => setTimeout(resolve, 1000));
       const dateFromFormatted = this.formatDate(this.flightSearch.date);
@@ -61,10 +63,12 @@ export default {
             this.searchResults = response.data.data.flights;
           } else {
             console.error('Error fetching flights:', response.data);
+            this.errorMessage = 'No flights found for your search criteria';
           }
         })
         .catch(error => {
           console.error('Error fetching flights:', error);
+          this.errorMessage = 'Failed to search flights. Please try again.';
         });
 
       this.isLoading = false;
@@ -195,6 +199,7 @@ export default {
             :disabled="isLoading">
             {{ isLoading ? 'Searching...' : 'Search Flights' }}
           </button>
+          <p v-if="errorMessage" class="text-sm text-red-600">{{ errorMessage }}</p>
         </div>
       </form>
     </div>

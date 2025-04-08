@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
@@ -13,7 +13,8 @@ const authStore = useAuthStore();
 const flightId = Number(route.params.flightId);
 const seatId = route.params.seatId as string;
 const user = computed(() => authStore.user?.id || null); // This would come from your auth store in a real app
-const userId=user.value;
+const userId = user.value; 
+const flexId = Number(route.query.flexId || 0);
 
 const loading = ref(true);
 const error = ref(null);
@@ -32,7 +33,7 @@ onMounted(async () => {
     // Step 1: Get discounted price from the booking management service
     const response = await axios.post('http://localhost:5090/api/booking/accept', {
       flight_id: flightId,
-      user_id:12
+      user_id:userId.value
     });
     
     bookingData.value = response.data;
@@ -123,11 +124,8 @@ console.log('Sending booking confirmation with payload:', {
     const confirmResponse = await axios.post('http://localhost:5090/api/booking/confirm', {
     flight_id: flightId,
     seat_id: seatId,
-    userId: userId,
-    startDestination: bookingData.value.departure,
-    endDestination: bookingData.value.destination,
-    startDate: departureDate,
-    endDate: departureDate
+    userId: userId.value,
+    flexId: flexId
     });
 
 

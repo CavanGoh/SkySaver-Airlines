@@ -136,8 +136,7 @@ def confirm_booking():
     data = request.json
     
     # Validate request data for both seat and flex user information
-    required_fields = ['flight_id', 'seat_id', 'userId', 'startDestination', 
-                      'endDestination', 'startDate', 'endDate']
+    required_fields = ['flight_id', 'seat_id', 'userId', 'flexId']
     
     if not data or not all(field in data for field in required_fields):
         return jsonify({'error': 'Missing required parameters', 
@@ -154,11 +153,7 @@ def confirm_booking():
     
     # Step 2: Remove user from flex list
     flex_data = {
-        'userId': data['userId'],
-        'startDestination': data['startDestination'],
-        'endDestination': data['endDestination'],
-        'startDate': data['startDate'],
-        'endDate': data['endDate']
+        'flexId': data['flexId']
     }
     
     try:
