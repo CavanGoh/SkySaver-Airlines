@@ -22,7 +22,7 @@ PAYMENT_SERVICE_URL = os.environ.get('PAYMENT_SERVICE_URL', 'http://host.docker.
 SEAT_SERVICE_URL = os.environ.get('SEAT_SERVICE_URL', 'http://seat:8080/seats')
 
 # FlexSeat service is not containerized, use host.docker.internal
-FLEX_SERVICE_URL = os.environ.get('FLEX_SERVICE_URL', 'http://host.docker.internal:5003')
+FLEX_SERVICE_URL = os.environ.get('FLEX_SERVICE_URL', 'http://host.docker.internal:5003') 
 
 # Booking service is not containerized, use host.docker.internal
 BOOKING_SERVICE_URL = os.environ.get('BOOKING_SERVICE_URL',  "http://booking:5001/booking")
@@ -31,6 +31,7 @@ BOOKING_SERVICE_URL = os.environ.get('BOOKING_SERVICE_URL',  "http://booking:500
 OUTSYSTEMS_PRICE_URL = 'https://personal-y0j5ezns.outsystemscloud.com/Price/rest/PriceAPI/CalculatePrice'
 
 BOOK_FLIGHT_COMPOSITE_URL = os.environ.get('BOOK_FLIGHT_URL', 'http://book-flight:5002/book_flight')
+
 
 
 @booking_management.route('/api/booking/accept', methods=['POST'])
@@ -136,8 +137,7 @@ def confirm_booking():
     data = request.json
     
     # Validate request data for both seat and flex user information
-    required_fields = ['flight_id', 'seat_id', 'userId', 'startDestination', 
-                      'endDestination', 'startDate', 'endDate']
+    required_fields = ['flight_id', 'seat_id', 'userId', 'flexId']
     
     if not data or not all(field in data for field in required_fields):
         return jsonify({'error': 'Missing required parameters', 
@@ -154,11 +154,7 @@ def confirm_booking():
     
     # Step 2: Remove user from flex list
     flex_data = {
-        'userId': data['userId'],
-        'startDestination': data['startDestination'],
-        'endDestination': data['endDestination'],
-        'startDate': data['startDate'],
-        'endDate': data['endDate']
+        'flexId': data['flexId']
     }
     
     try:

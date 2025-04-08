@@ -11,6 +11,7 @@ const authStore = useAuthStore();
 const flightId = Number(route.params.flightId);
 const seatId = route.params.seatId as string;
 const userId = computed(() => authStore.user); // This would come from your auth store in a real app
+const flexId = Number(route.query.flexId || 0);
 
 const loading = ref(true);
 const error = ref(null);
@@ -121,10 +122,7 @@ console.log('Sending booking confirmation with payload:', {
     flight_id: flightId,
     seat_id: seatId,
     userId: userId,
-    startDestination: bookingData.value.departure,
-    endDestination: bookingData.value.destination,
-    startDate: departureDate,
-    endDate: departureDate
+    flexId: flexId
     });
 
 

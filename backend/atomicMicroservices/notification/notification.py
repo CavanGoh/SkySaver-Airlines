@@ -25,6 +25,7 @@ class Notification(db.Model):
     seen = db.Column(db.Boolean, default=False)
     seen_at = db.Column(db.DateTime, nullable=True)
     is_active = db.Column(db.Boolean, default=True)
+    flex_id = db.Column(db.Integer, nullable=True)
 
     def to_dict(self):
         return {
@@ -36,7 +37,8 @@ class Notification(db.Model):
             "created_at": self.created_at.isoformat(),
             "seen": self.seen,
             "seen_at": self.seen_at.isoformat() if self.seen_at else None,
-            "is_active": self.is_active
+            "is_active": self.is_active,
+            "flex_id": self.flex_id
         }
 
 # Initialize the database
@@ -49,6 +51,7 @@ def send_notifications():
     users = data['users']
     flight_details = data['flight_details']
     seat_id = data.get('seat_id')
+    flex_id = data.get('flex_id')
 
     notifications = []
     for user in users:
@@ -56,6 +59,7 @@ def send_notifications():
             user_id=user,
             flight_id=flight_details['id'],
             seat_id=seat_id,
+            flex_id=flex_id,
             message=f"Flight {flight_details['id']} from {flight_details['departure']} to {flight_details['destination']} on {flight_details['departureDate']} was cancelled. You may now book."
         )
         db.session.add(notification)

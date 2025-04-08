@@ -12,20 +12,27 @@ db = SQLAlchemy(app)
 
 class FlexSeat(db.Model):
     __tablename__ = 'flexSeat'
-    userId = db.Column(db.Integer, primary_key=True)
-    startDestination = db.Column(db.String(100), primary_key=True)
-    endDestination = db.Column(db.String(100), primary_key=True)
-    startDate = db.Column(db.Date, primary_key=True)  # Changed from DateTime to Date
-    endDate = db.Column(db.Date, primary_key=True)    # Changed from DateTime to Date
+    flexId = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    userId = db.Column(db.Integer, nullable=False)
+    startDestination = db.Column(db.String(100), nullable=False)
+    endDestination = db.Column(db.String(100), nullable=False)
+    startDate = db.Column(db.Date, nullable=False)  # Changed from DateTime to Date
+    endDate = db.Column(db.Date, nullable=False)    # Changed from DateTime to Date
     createdAt = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    __table_args__ = (
+        db.UniqueConstraint('userId', 'startDestination', 'endDestination', 'startDate', 'endDate', 
+                           name='unique_flex_entry'),
+    )
 
     def json(self):
         return {
+            'flexId': self.flexId,
             'userId': self.userId,
             'startDestination': self.startDestination,
             'endDestination': self.endDestination,
-            'startDate': self.startDate.strftime('%Y-%m-%d'),  # Format as Date
-            'endDate': self.endDate.strftime('%Y-%m-%d'),      # Format as Date
+            'startDate': self.startDate.strftime('%Y-%m-%d'),
+            'endDate': self.endDate.strftime('%Y-%m-%d'),
             'createdAt': self.createdAt.strftime('%Y-%m-%d %H:%M:%S')
         }
 
@@ -67,13 +74,12 @@ def get_cancelled_match():
             FlexSeat.endDate >= departure_date
         ).all()
 
-        matched_user_ids = [match.userId for match in matches]
 
         return jsonify({
             "code": 200,
             "data": {
-                "userIds": matched_user_ids,
-                "count": len(matched_user_ids),
+                "users": [match.json() for match in matches],
+                "count": len(matches),
                 "searchCriteria": {
                     "departure": departure,
                     "destination": destination,
@@ -129,17 +135,9 @@ def create_flexseat():
 def delete_flexseat():
     try:
         data = request.get_json()
-        start_date = datetime.strptime(data['startDate'], '%Y-%m-%d').date()  # Changed to Date
-        end_date = datetime.strptime(data['endDate'], '%Y-%m-%d').date()       # Changed to Date
-
-        record = FlexSeat.query.filter_by(
-            userId=data['userId'],
-            startDestination=data['startDestination'],
-            endDestination=data['endDestination'],
-            startDate=start_date,
-            endDate=end_date
-        ).first()
-
+        
+        record = FlexSeat.query.filter_by(flexId=data['flexId']).first()
+        
         if not record:
             return jsonify({
                 "code": 404,

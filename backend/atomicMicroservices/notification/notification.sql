@@ -10,7 +10,8 @@ CREATE TABLE notifications (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     seen BOOLEAN DEFAULT FALSE,
     seen_at TIMESTAMP NULL,
-    is_active BOOLEAN DEFAULT TRUE
+    is_active BOOLEAN DEFAULT TRUE,
+    flex_id INTEGER NOT NULL
 );
 
 ALTER TABLE notifications ADD COLUMN seat_id VARCHAR(10);
