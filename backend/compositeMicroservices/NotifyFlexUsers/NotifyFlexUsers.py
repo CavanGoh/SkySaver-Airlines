@@ -81,7 +81,7 @@ def callback(ch, method, properties, body):
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
 def start_consumer():
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    connection = pika.BlockingConnection(pika.ConnectionParameters('host.docker.internal',5672))
     channel = connection.channel()
     channel.basic_consume(queue='notify', on_message_callback=callback)
 
