@@ -30,7 +30,15 @@ Import the SQL files under MYSQL files
 4. notification.sql
 5. seat.sql
 
-### 2. Start Backend Services
+### 2. Setup RabbitMQ
+```bash
+cd backend
+docker build -t skysaver-rabbitmq .
+docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 skysaver-rabbitmq
+python rabbit_setup.py
+```
+
+### 3. Start Backend Services
 
 ```bash
 # Start microservices
@@ -38,7 +46,7 @@ cd backend
 docker compose up
 ```
 
-### 3. Start Frontend
+### 4. Start Frontend
 
 ```bash
 cd frontend
