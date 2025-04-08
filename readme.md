@@ -41,6 +41,7 @@ python rabbit_setup.py
 ### 3. Start Backend Services
 
 ```bash
+# For each of the cd below, open a new terminal before executing 
 # Start flexseat service 
 cd backend
 cd atomicMicroservices
