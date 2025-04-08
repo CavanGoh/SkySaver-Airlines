@@ -41,7 +41,36 @@ python rabbit_setup.py
 ### 3. Start Backend Services
 
 ```bash
-# Start microservices
+# Start flexseat service 
+cd backend
+cd atomicMicroservices
+cd flex User
+python flexseat.py
+
+# Start notification service 
+cd backend
+cd atomicMicroservices
+cd notification
+python notification.py
+
+# Start payment service 
+cd backend
+cd atomicMicroservices
+cd payment
+docker build -t paymentservice .
+docker run -p 5005:5005 payment-service
+
+# Start BookingCancelled composite service 
+cd backend
+cd compositeMicroservices
+python BookingCancelled.py
+
+# Start NotifyFlexUsers composite service 
+cd backend
+cd compositeMicroservices
+python NotifyFlexUSers.py
+
+#Run the other services
 cd backend
 docker compose up
 ```
@@ -63,3 +92,9 @@ Once started, the frontend will be available at http://localhost:5173
 - backend: Python backend services
   - `/atomicMicroservices`: Individual microservices
   - `/compositeMicroservices`: Services that coordinate multiple atomic services
+
+##To test, register 2 accounts. 
+
+#To test payment, use Paypal sandbox account given below:
+sb-dqk6w31792637@personal.example.com
+!QVp@7x4
