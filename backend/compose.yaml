@@ -4,6 +4,8 @@ networks:
     name: flight-network
   kong-net:
     driver: bridge
+    name: kong-net
+    # external: true
 
 volumes:
   pgdata:
@@ -81,6 +83,16 @@ services:
       - "5005:5005" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports
     networks:
     - kong-net
+  notification:
+    build:
+      context: "./atomicMicroservices/notification"
+      dockerfile: Dockerfile
+    image: edrictan/notification:1.0
+    container_name: notification
+    ports:
+      - "5021:5021" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports
+    networks:
+    - kong-net
 
 
   #######################################
@@ -99,25 +111,55 @@ services:
     depends_on:
       - booking
       - seat
+  booking-cancelled:
+    build:
+      context: "./compositeMicroservices/BookingCancelled"
+      dockerfile: Dockerfile
+    image: edrictan/booking-cancelled:1.0
+    container_name: booking-cancelled
+    ports:
+      - "5100:5100" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports
+    networks:
+      - kong-net
+    depends_on:
+      - booking
+      - seat
+  notify-flex-users:
+    build:
+      context: "./compositeMicroservices/NotifyFlexUsers"
+      dockerfile: Dockerfile
+    image: edrictan/notify-flex-users:1.0
+    container_name: notify-flex-users
+    networks:
+      - kong-net
+    depends_on:
+      - flight
+      - notification
+      - flex-seat
 
-  # booking-management:
-  #   build:
-  #     context: ./compositeMicroservices/BookingManagement
-  #     dockerfile: Dockerfile
-  #   image: edrictan/booking-management:1.0
-  #   container_name: booking-management
-  #   ports:
-  #     - "5090:5090"
-  #   networks:
-  #     - flight-network
-  #     - kong-net
-  #   environment:
-  #     - FLIGHT_SERVICE_URL=http://flight:5000/flights
-  #     - PAYMENT_SERVICE_URL=http://host.docker.internal:5005/api/payment/flex
-  #     - SEAT_SERVICE_URL=http://seat:8080/seats
-  #     - FLEX_SERVICE_URL=http://host.docker.internal:5003/flexseat
-  #     - BOOKING_SERVICE_URL=http://booking:5001/booking
-  #     - BOOK_FLIGHT_URL=http://book-flight:5002/book_flight
+  booking-management:
+    build:
+      context: ./compositeMicroservices/BookingManagement
+      dockerfile: Dockerfile
+    image: edrictan/booking-management:1.0
+    container_name: booking-management
+    ports:
+      - "5090:5090"
+    networks:
+      - kong-net
+    environment:
+      - FLIGHT_SERVICE_URL=http://flight:5000/flights
+      - PAYMENT_SERVICE_URL=http://host.docker.internal:5005/api/payment/flex
+      - SEAT_SERVICE_URL=http://seat:8080/seats
+      - FLEX_SERVICE_URL=http://host.docker.internal:5003/flexseat
+      - BOOKING_SERVICE_URL=http://booking:5001/booking
+      - BOOK_FLIGHT_URL=http://book-flight:5002/book_flight
+    depends_on:
+      - seat
+      - flight
+      - payment
+      - book-flight
+      - notification
 
   #######################################
   # Postgres: The database used by Kong

@@ -1,0 +1,34 @@
+volumes:
+  rabbitmq_data:
+    name: esd_rabbitmq_data
+
+networks:
+  esd-net:
+    driver: bridge
+    name: kong-net
+    external: true
+####################################
+  # RabbitMQ: The messaging broker   
+  ####################################
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: esd-rabbit
+    restart: always
+    ports: #This ports: is to expose the port to the host machine
+      - "5672:5672" # but if u declare networks: dont need to explose ports 
+      # - "15672:15672" #AKA this section dont need if got "networks:"
+    volumes:           #but because want interact with RabbitMQ from outside the Docker network (e.g., to monitor RabbitMQ via the Management UI) so still need ports
+      - rabbitmq_data:/var/lib/rabbitmq #mounts the rabbitmq_data volume to the directory /var/lib/rabbitmq inside the container, which is where RabbitMQ stores its data.
+    networks:
+      - kong-net
+  # rabbit-setup:
+  #   build:
+  #     context: ./
+  #     dockerfile: Dockerfile
+  #   image: edrictan/rabbit-setup:1.0
+  #   container_name: rabbit-setup
+  #   networks:
+  #   - kong-net
+  #   depends_on:
+  #   - rabbitmq
+    # command: ["wait-for-it", "rabbitmq:5672", "--", "python", "./rabbit_setup.py"]
