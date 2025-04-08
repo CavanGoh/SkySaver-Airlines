@@ -121,7 +121,7 @@ export default {
         });
 
         console.log('Booking created:', response.data);
-        this.router.push('/my-bookings');
+        this.router.push('/my-bookings?tab=upcoming');
       } catch (error) {
         console.error('Error creating booking:', error);
       }

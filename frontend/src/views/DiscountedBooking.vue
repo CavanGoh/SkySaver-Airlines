@@ -2,13 +2,18 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
+import { useAuthStore } from '../stores/auth';
+import { computed } from 'vue';
+
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 
 const flightId = Number(route.params.flightId);
 const seatId = route.params.seatId as string;
-const userId = 1; // This would come from your auth store in a real app
+const user = computed(() => authStore.user?.id || null); // This would come from your auth store in a real app
+const userId=user.value;
 
 const loading = ref(true);
 const error = ref(null);
@@ -26,8 +31,8 @@ onMounted(async () => {
     
     // Step 1: Get discounted price from the booking management service
     const response = await axios.post('http://localhost:5090/api/booking/accept', {
-      user_id: userId,
-      flight_id: flightId
+      flight_id: flightId,
+      user_id:12
     });
     
     bookingData.value = response.data;
@@ -97,16 +102,39 @@ const setupPayPalButton = () => {
     if (paymentResult.data.status !== 'success') {
       throw new Error('Payment execution failed');
     }
+
+   ;
+
+//jz ignore startdate enddate
+const departureDate = bookingData.value?.departureDate || new Date().toISOString().split('T')[0];
+
+console.log('Sending booking confirmation with payload:', {
+  flight_id: flightId,
+  seat_id: seatId,
+  userId: userId,
+  startDestination: bookingData.value.departure,
+  endDestination: bookingData.value.destination,
+  startDate: departureDate,
+  endDate: departureDate
+});
+    
     
     // Now confirm the booking
     const confirmResponse = await axios.post('http://localhost:5090/api/booking/confirm', {
+    flight_id: flightId,
+    seat_id: seatId,
+    userId: userId,
+    startDestination: bookingData.value.departure,
+    endDestination: bookingData.value.destination,
+    startDate: departureDate,
+    endDate: departureDate
+    });
+
+
+
+      await axios.put('http://localhost:5021/notifications/deactivate', {
       flight_id: flightId,
-      seat_id: seatId,
-      userId: userId,
-      startDestination: bookingData.value.departure,
-      endDestination: bookingData.value.destination,
-      startDateTime: new Date().toISOString(),
-      endDateTime: new Date().toISOString()
+      user_id: userId
     });
     
     // Update booking data with confirmation

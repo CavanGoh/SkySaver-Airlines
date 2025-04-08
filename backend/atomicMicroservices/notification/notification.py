@@ -104,28 +104,37 @@ def mark_notification_seen():
 def deactivate_notifications():
     data = request.json
     flight_id = data.get('flight_id')
-    user_id = data.get('user_id')
+    
+    print(f"Deactivation request received with data: {data}")
     
     if not flight_id:
+        print("Error: Missing flight_id")
         return jsonify({"error": "Missing flight_id"}), 400
         
-    # Deactivate all notifications for this flight except for the booking user
+    # Deactivate all notifications for this flight
     query = Notification.query.filter_by(flight_id=flight_id, is_active=True)
     
-    if user_id:
-        query = query.filter(Notification.user_id != user_id)
-        
     notifications = query.all()
+    print(f"Found {len(notifications)} active notifications for flight_id {flight_id}")
     
     for notification in notifications:
+        print(f"Deactivating notification {notification.notification_id} for user {notification.user_id}")
         notification.is_active = False
         
-    db.session.commit()
+    try:
+        db.session.commit()
+        print(f"Successfully committed changes to database")
+    except Exception as e:
+        print(f"Error committing to database: {str(e)}")
+        db.session.rollback()
+        return jsonify({"error": f"Database error: {str(e)}"}), 500
     
     return jsonify({
         "message": "Notifications deactivated",
         "count": len(notifications)
     }), 200
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5021, debug=True)

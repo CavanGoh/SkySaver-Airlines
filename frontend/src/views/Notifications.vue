@@ -2,19 +2,23 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import { useAuthStore } from '../stores/auth.ts';
+import { computed } from 'vue';
 
 const router = useRouter();
 const notifications = ref([]);
 const loading = ref(true);
 const error = ref(null);
-const userId = 1; // This would come from your auth store in a real app
+const authStore = useAuthStore(); // Access the auth store
+const isLoggedIn = computed(() => authStore.isAuthenticated);
+const userId = computed(() => authStore.user?.id || null);
 
 onMounted(async () => {
   try {
     loading.value = true;
     
     // Fetch notifications from the notification service
-    const response = await axios.get(`http://localhost:5021/notifications?user_id=${userId}`);
+    const response = await axios.get(`http://localhost:5021/notifications?user_id=${userId.value}`);
     
     if (response.status === 200) {
       notifications.value = response.data;
@@ -45,9 +49,7 @@ const viewDiscountedSeat = (notification) => {
     notification_id: notification.notification_id
   });
   
-  // Extract seat ID from the flight ID
-  // Since your notification doesn't include seat ID, we'll need to pass just the flight ID
-  // and handle seat selection in the detail page
+
   router.push({
     name: 'NotificationDetail',
     params: { 
