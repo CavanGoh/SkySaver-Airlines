@@ -29,6 +29,7 @@ Import the SQL files under MYSQL files
 3. booking.sql
 4. notification.sql
 5. seat.sql
+6. payment.sql
 
 ### 2. Setup RabbitMQ
 ```bash
