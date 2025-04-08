@@ -71,6 +71,17 @@ services:
       - "5003:5003" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports
     networks:
     - kong-net
+  payment:
+    build:
+      context: "./atomicMicroservices/payment"
+      dockerfile: Dockerfile
+    image: edrictan/payment:1.0
+    container_name: payment
+    ports:
+      - "5005:5005" #NOTE: rmb remove cause API gateway can access liao. reduce exposing as many ports
+    networks:
+    - kong-net
+
 
   #######################################
   # Composite Microservices: To spin them up
@@ -89,24 +100,24 @@ services:
       - booking
       - seat
 
-  booking-management:
-    build:
-      context: ./compositeMicroservices/BookingManagement
-      dockerfile: Dockerfile
-    image: edrictan/booking-management:1.0
-    container_name: booking-management
-    ports:
-      - "5090:5090"
-    networks:
-      - flight-network
-      - kong-net
-    environment:
-      - FLIGHT_SERVICE_URL=http://flight:5000/flights
-      - PAYMENT_SERVICE_URL=http://host.docker.internal:5005/api/payment/flex
-      - SEAT_SERVICE_URL=http://seat:8080/seats
-      - FLEX_SERVICE_URL=http://host.docker.internal:5003/flexseat
-      - BOOKING_SERVICE_URL=http://booking:5001/booking
-      - BOOK_FLIGHT_URL=http://book-flight:5002/book_flight
+  # booking-management:
+  #   build:
+  #     context: ./compositeMicroservices/BookingManagement
+  #     dockerfile: Dockerfile
+  #   image: edrictan/booking-management:1.0
+  #   container_name: booking-management
+  #   ports:
+  #     - "5090:5090"
+  #   networks:
+  #     - flight-network
+  #     - kong-net
+  #   environment:
+  #     - FLIGHT_SERVICE_URL=http://flight:5000/flights
+  #     - PAYMENT_SERVICE_URL=http://host.docker.internal:5005/api/payment/flex
+  #     - SEAT_SERVICE_URL=http://seat:8080/seats
+  #     - FLEX_SERVICE_URL=http://host.docker.internal:5003/flexseat
+  #     - BOOKING_SERVICE_URL=http://booking:5001/booking
+  #     - BOOK_FLIGHT_URL=http://book-flight:5002/book_flight
 
   #######################################
   # Postgres: The database used by Kong
@@ -175,6 +186,20 @@ services:
       - "8000:8000" # Takes incoming HTTP traffic from Consumers, and forwards it to upstream Services.
       - "8001:8001" # Admin API. Listens for calls from the command line over HTTP.
       - "8002:8002" # Kong Manager (GUI). Listens for HTTP traffic.
+  
+  #######################################
+  # Kong Config: Using DB-based for KONG aka changing config via GUI
+  # This creates a container that auto syncs the KONG configs 
+  #######################################
+  deck-sync-kong-config:
+    build:
+      context: ./importKongConfig
+    image: edrictan/deck-sync-kong-config:1.0
+    container_name: deck-sync-kong-config
+    networks:
+      - kong-net
+    depends_on:
+      - kong
 
   #######################################
   # Konga: Kong GUI

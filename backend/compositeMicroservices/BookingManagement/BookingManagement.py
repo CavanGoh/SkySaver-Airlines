@@ -8,32 +8,31 @@ CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 
 
-booking_management = Blueprint('booking_management', __name__)
 
 
 # Service URLs - these would typically be in config.py
 # Flight service is containerized, use container name
-FLIGHT_SERVICE_URL = os.environ.get('FLIGHT_SERVICE_URL', 'http://flight:5000/flights')
+FLIGHT_SERVICE_URL = os.environ.get('FLIGHT_SERVICE_URL', 'http://localhost:5000/flight')
 
 # Payment service is not containerized, use host.docker.internal
-PAYMENT_SERVICE_URL = os.environ.get('PAYMENT_SERVICE_URL', 'http://host.docker.internal:5005/api/payment/flex')
+PAYMENT_SERVICE_URL = os.environ.get('PAYMENT_SERVICE_URL', 'http://localhost:5005/api/payment/flex')
 
 # Seat service is containerized, use container name
 SEAT_SERVICE_URL = os.environ.get('SEAT_SERVICE_URL', 'http://seat:8080/seats')
 
 # FlexSeat service is not containerized, use host.docker.internal
-FLEX_SERVICE_URL = os.environ.get('FLEX_SERVICE_URL', 'http://host.docker.internal:5003')
+FLEX_SERVICE_URL = os.environ.get('FLEX_SERVICE_URL', 'http://localhost:5003')
 
 # Booking service is not containerized, use host.docker.internal
-BOOKING_SERVICE_URL = os.environ.get('BOOKING_SERVICE_URL',  "http://booking:5001/booking")
+BOOKING_SERVICE_URL = os.environ.get('BOOKING_SERVICE_URL',  "http://localhost:5001/booking")
 
 # External service, keep the full URL
 OUTSYSTEMS_PRICE_URL = 'https://personal-y0j5ezns.outsystemscloud.com/Price/rest/PriceAPI/CalculatePrice'
 
-BOOK_FLIGHT_COMPOSITE_URL = os.environ.get('BOOK_FLIGHT_URL', 'http://book-flight:5002/book_flight')
+BOOK_FLIGHT_COMPOSITE_URL = os.environ.get('BOOK_FLIGHT_URL', 'http://localhost:5002/book_flight')
 
 
-@booking_management.route('/api/booking/accept', methods=['POST'])
+@app.route('/api/booking/accept', methods=['POST'])
 def accept_booking():
     data = request.json
     
@@ -42,9 +41,10 @@ def accept_booking():
     
     try:
         # Get flight information
-        flight_response = requests.get(f"{FLIGHT_SERVICE_URL}?id={data['flight_id']}")
+        flight_response = requests.get(f"{FLIGHT_SERVICE_URL}/{data['flight_id']}")
         flight_response.raise_for_status()
-        flight_data = flight_response.json()['data']['flights'][0]
+        flight_json = flight_response.json()  # ✅ Extract JSON from response
+        flight_data = flight_json["data"] 
         
         # Calculate discounted price
         price_request_data = {
@@ -57,7 +57,7 @@ def accept_booking():
         return jsonify({
             'booking_id': f"temp_{data['user_id']}",
             'user_id': data['user_id'],
-            'flight_id': data['flight_id'],
+            'flight_id': flight_data['id'],
             'departure': flight_data['departure'],
             'destination': flight_data['destination'],
             'original_price': flight_data['price'],
@@ -72,7 +72,7 @@ def accept_booking():
 
 
 
-@booking_management.route('/api/booking/process-payment', methods=['POST'])
+@app.route('/api/booking/process-payment', methods=['POST'])
 def process_payment():
     try:
         data = request.json
@@ -131,7 +131,7 @@ def process_payment():
 #         return False
 
 
-@booking_management.route('/api/booking/confirm', methods=['POST'])
+@app.route('/api/booking/confirm', methods=['POST'])
 def confirm_booking():
     data = request.json
     
@@ -196,7 +196,6 @@ def confirm_booking():
         }), 500
 
 if __name__ == '__main__':
-    app.register_blueprint(booking_management)
     app.run(host='0.0.0.0', port=5090, debug=True)
 
 
