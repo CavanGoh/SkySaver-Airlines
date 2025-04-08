@@ -106,7 +106,7 @@ const submitFlexBooking = async () => {
     <div class="booking-header">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 class="text-4xl font-bold text-white mb-4">Smart Flex Booking</h1>
-        <p class="text-white text-lg max-w-2xl">Get up to 60% off by being flexible with your travel dates. We'll notify you when discounted seats become available!</p>
+        <p class="text-white text-lg max-w-2xl">Get up to 50% off by being flexible with your travel dates. We'll notify you when discounted seats become available!</p>
       </div>
     </div>
 
