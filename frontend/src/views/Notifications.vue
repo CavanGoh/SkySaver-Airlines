@@ -45,9 +45,7 @@ const viewDiscountedSeat = (notification) => {
     notification_id: notification.notification_id
   });
   
-  // Extract seat ID from the flight ID
-  // Since your notification doesn't include seat ID, we'll need to pass just the flight ID
-  // and handle seat selection in the detail page
+
   router.push({
     name: 'NotificationDetail',
     params: { 
