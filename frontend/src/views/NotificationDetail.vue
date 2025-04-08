@@ -19,7 +19,7 @@ onMounted(async () => {
     loading.value = true;
     
     // Get flight details
-    const flightResponse = await axios.get(`http://localhost:5000/flight/${flightId}`);
+    const flightResponse = await axios.get(`http://localhost:8000/flight/${flightId}`);
     
     if (flightResponse.status === 200) {
       flightDetails.value = flightResponse.data.data;
