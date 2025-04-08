@@ -1,20 +1,22 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import { useAuthStore } from '../stores/auth.ts';
 
 const router = useRouter();
 const notifications = ref([]);
+const authStore = useAuthStore();
 const loading = ref(true);
 const error = ref(null);
-const userId = 1; // This would come from your auth store in a real app
+const userId = computed(() => authStore.user?.id);
 
 onMounted(async () => {
   try {
     loading.value = true;
     
     // Fetch notifications from the notification service
-    const response = await axios.get(`http://localhost:5021/notifications?user_id=${userId}`);
+    const response = await axios.get(`http://localhost:5021/notifications?user_id=${userId.value}`);
     
     if (response.status === 200) {
       notifications.value = response.data;
@@ -52,6 +54,9 @@ const viewDiscountedSeat = (notification) => {
       id: notification.notification_id,
       flightId: notification.flight_id,
       seatId: notification.seat_id 
+    },
+    query: {
+      flexId: notification.flex_id 
     }
   });
 };

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
@@ -30,7 +30,7 @@ onMounted(async () => {
     // Step 1: Get discounted price from the booking management service
     const response = await axios.post('http://localhost:5090/api/booking/accept', {
       flight_id: flightId,
-      user_id:userId
+      user_id:userId.value
     });
     
     bookingData.value = response.data;
@@ -121,7 +121,7 @@ console.log('Sending booking confirmation with payload:', {
     const confirmResponse = await axios.post('http://localhost:5090/api/booking/confirm', {
     flight_id: flightId,
     seat_id: seatId,
-    userId: userId,
+    userId: userId.value,
     flexId: flexId
     });
 
