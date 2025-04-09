@@ -169,8 +169,7 @@ services:
       - "8002:8002" # Kong Manager (GUI). Listens for HTTP traffic.
   deck-sync-kong-config:
     build:
-      context: ./import
-      dockerfile: 
+      context: ./imports
     image: edrictan/deck-sync-kong-config:1.0
     container_name: deck-sync-kong-config
     networks:
